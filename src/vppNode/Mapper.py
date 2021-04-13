@@ -1,4 +1,4 @@
-from typing import Generic, Mapping, TypeVar
+from typing import AbstractSet, Generic, Mapping, Tuple, TypeVar
 
 T = TypeVar('T')
 
@@ -18,6 +18,9 @@ class Mapper(Generic[T]):
 
     def contains(self, id: int) -> bool:
         return id in self.mp
+
+    def getItems(self) -> AbstractSet[Tuple[int, T]]:
+        return self.mp.items()
     
     def get(self, id: int) -> T:
         return self.mp[id]
