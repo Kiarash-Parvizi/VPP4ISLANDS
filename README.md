@@ -4,6 +4,11 @@ For optimizing the performance of the virtual powerplant corresponding to the gr
 regarding the benefits of prosumers and with the aim of reducing CO2 emission,
 an optimization module will be provided.
 
+## run and test:
+```
+python -m unittest tests.test1
+```
+
 ## minimize function:
 ![](about/MinF.jpg)
 
