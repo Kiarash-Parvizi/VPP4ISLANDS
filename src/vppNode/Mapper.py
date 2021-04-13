@@ -15,6 +15,12 @@ class Mapper(Generic[T]):
         self.counter += 1
         self.mp[self.counter] = obj
         return self.counter
+    
+    def rem(self, id: int) -> bool:
+        if id in self.mp:
+            del self.mp[id]
+            return True
+        return False
 
     def contains(self, id: int) -> bool:
         return id in self.mp
@@ -23,4 +29,6 @@ class Mapper(Generic[T]):
         return self.mp.items()
     
     def get(self, id: int) -> T:
-        return self.mp[id]
+        if self.contains(id):
+            return self.mp[id]
+        return None

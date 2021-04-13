@@ -5,6 +5,7 @@ from .Edge import Edge
 from .Junction import Junction
 from .Mapper import Mapper
 
+import copy
 
 class VppNode:
     # instance variables
@@ -22,6 +23,25 @@ class VppNode:
     def add_edge(self, junctionIds: Tuple[int,int]) -> int:
         edge = Edge(junctionIds, LineProps(100, 1, 1, 1))
         id = self.edgeMp.add(edge)
-        self.junctionMp.get(junctionIds[0]).edges.append(id)
-        self.junctionMp.get(junctionIds[1]).edges.append(id)
+        self.junctionMp.get(junctionIds[0]).add_edge(id)
+        self.junctionMp.get(junctionIds[1]).add_edge(id)
         return id
+
+    def rem_junction(self, id: int) -> bool:
+        junction = self.junctionMp.get(id)
+        if self.junctionMp.rem(id):
+            for eId in junction.edges:
+                self.rem_edge(eId)
+            return True
+        return False
+
+    def rem_edge(self, id) -> bool:
+        edge = self.edgeMp.get(id)
+        if self.edgeMp.rem(id):
+            for jId in edge.junctions:
+                junction = self.junctionMp.get(jId)
+                if junction != None:
+                    junction.rem_edge(id)
+            return True
+        return False
+    
