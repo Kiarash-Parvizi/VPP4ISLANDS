@@ -1,6 +1,7 @@
 
 class LineProps:
     # instance variables
+    # length: float
     # resistance: float
     # capacitance: float
     # inductance: float

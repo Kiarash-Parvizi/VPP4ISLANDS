@@ -12,6 +12,9 @@ class GraphVisualizer:
         self.graph.clear()
         for id, edge in self.vppNode.edgeMp.getItems():
             self.graph.add_edge(edge.junctions[0], edge.junctions[1])
+        for id, junction in self.vppNode.junctionMp.getItems():
+            if len(junction.edges) == 0:
+                self.graph.add_node(id)
     
     def draw(self):
         plt.subplot(121)

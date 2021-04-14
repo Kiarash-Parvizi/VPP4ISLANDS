@@ -7,8 +7,8 @@ class Junction:
     ###
     
     # constructor
-    def __init__(self, edges : Set[int] = set()) -> None:
-        self.edges = edges
+    def __init__(self, edges : Set[int] = None) -> None:
+        self.edges = set() if edges == None else edges
 
     def add_edge(self, id: int):
         self.edges.add(id)

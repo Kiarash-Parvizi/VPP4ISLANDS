@@ -30,7 +30,11 @@ class VppNode:
     def rem_junction(self, id: int) -> bool:
         junction = self.junctionMp.get(id)
         if self.junctionMp.rem(id):
+            # remove edges connecting the removed junction to its neighbors
+            eIds_toBeRemoved = []
             for eId in junction.edges:
+                eIds_toBeRemoved.append(eId)
+            for eId in eIds_toBeRemoved:
                 self.rem_edge(eId)
             return True
         return False
