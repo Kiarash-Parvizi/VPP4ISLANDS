@@ -22,5 +22,5 @@ class GraphVisualizer:
         nx.draw(self.graph, with_labels=True, font_weight='bold')
         plt.subplot(122)
         #
-        nx.draw_shell(self.graph, nlist=[range(5, 10), range(5)], with_labels=True, font_weight='bold')
+        nx.draw_shell(self.graph, nlist=[range(5, self.vppNode.junctionMp.counter+1), range(5)], with_labels=True, font_weight='bold')
         plt.show()

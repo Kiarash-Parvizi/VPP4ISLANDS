@@ -49,3 +49,9 @@ class VppNode:
             return True
         return False
     
+    def clear(self) -> None:
+        jLs = []
+        for jId, _ in self.junctionMp.getItems():
+            jLs.append(jId)
+        for jId in jLs:
+            self.rem_junction(jId)

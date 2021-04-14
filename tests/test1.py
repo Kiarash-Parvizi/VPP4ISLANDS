@@ -5,7 +5,7 @@ from src.vppNode.VppNode import *
 print("test1...")
 
 vppNode = VppNode()
-junction_objs = [Junction() for _ in range(10)]
+junction_objs = [Junction() for _ in range(20)]
 jId1 = vppNode.add_junction(junction_objs[0])
 jId2 = vppNode.add_junction(junction_objs[1])
 jId3 = vppNode.add_junction(junction_objs[2])
@@ -64,6 +64,16 @@ visualizer.draw()
 eId6 = vppNode.add_edge((jId4, jId8))
 eId7 = vppNode.add_edge((jId8, jId9))
 eId8 = vppNode.add_edge((jId9, jId4))
+
+visualizer.process()
+visualizer.draw()
+
+# clear everything:
+vppNode.clear()
+
+jId10 = vppNode.add_junction(junction_objs[9])
+jId11 = vppNode.add_junction(junction_objs[10])
+eid = vppNode.add_edge((jId10, jId11))
 
 visualizer.process()
 visualizer.draw()
