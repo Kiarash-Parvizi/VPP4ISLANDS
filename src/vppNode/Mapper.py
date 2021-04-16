@@ -16,6 +16,9 @@ class Mapper(Generic[T]):
         self.mp[self.counter] = obj
         return self.counter
     
+    def add_by_id(self, id: int, obj: T) -> None:
+        self.mp[id] = obj
+
     def rem(self, id: int) -> bool:
         if id in self.mp:
             del self.mp[id]
