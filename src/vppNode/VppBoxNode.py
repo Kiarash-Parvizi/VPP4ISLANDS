@@ -3,12 +3,12 @@ from .Junction import Junction
 from .Mapper import Mapper
 import socket
 import requests
-from PowerResources.DG import DG
-from PowerResources.ES import ES
-from PowerResources.PV import PV
-from PowerResources.FL import FL
-from PowerResources.WF import WF
-from PowerResources.Resource import Resource
+from ..PowerResources.DG import DG
+from ..PowerResources.ES import ES
+from ..PowerResources.PV import PV
+from ..PowerResources.FL import FL
+from ..PowerResources.WF import WF
+from ..PowerResources.Resource import Resource
 from typing import Type
 from .UncertaintyParams import UncertaintyParams
 
