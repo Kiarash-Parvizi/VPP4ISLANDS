@@ -1,0 +1,2 @@
+ES No.,Node_id,P_charge,P_discharge,Energy Capacity,SOE_min,SOE_max,Efficiency,SOE_initial
+1,13,100,100,200,10,90,85,50
