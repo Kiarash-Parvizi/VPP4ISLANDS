@@ -10,6 +10,7 @@ from PowerResources.FL import FL
 from PowerResources.WF import WF
 from PowerResources.Resource import Resource
 from typing import Type
+from .UncertaintyParams import UncertaintyParams
 
 
 class VppBoxNode(Junction):
@@ -64,6 +65,11 @@ class VppBoxNode(Junction):
         self.update_resource("PV", PV, self.pv_resources)
         self.update_resource("DG", DG, self.dg_resources)
         self.update_resource("FL", FL, self.fl_resources)
+
+    def get_uncertainty_params(self, time: int) -> None:
+        res = requests.get(self.endpoint + "/uncertainty-params/" + str(time)).json()
+        uncertainty_params = UncertaintyParams.get_instance_by_json(res['data'])
+        return uncertainty_params
 
     @staticmethod
     def print_resource(resource_map: Mapper) -> None:
