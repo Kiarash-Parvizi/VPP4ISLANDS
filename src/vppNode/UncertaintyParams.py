@@ -3,7 +3,6 @@ class UncertaintyParams:
     Attributes:
     wf_pu       (float): P.U of WF
     pv_pu       (float): P.U of PV
-    dg_pu       (float): P.U of Distributed Generators
     da_price    (float): DA Price
     rt_price    (float): RT Price
     time        (float)
