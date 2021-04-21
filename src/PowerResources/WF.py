@@ -7,10 +7,23 @@ class WF (Resource):
     node_id     (int)  : node_id of bus where WindFarm is installed
     number      (int)  : WF object number between all island Wind Farms
     p_max       (float): p_max in kW
+    p_pu        (float): input type: wind power from prediction tools
+    pr_wt       (float): output type: Kwh price wind turbine
     """
     def __init__(self, node_id: int, number: int, p_max: float) -> None:
         super().__init__(node_id, number)
         self.p_max = p_max
+        # inputs
+        self.p_pu = 0
+        # outputs
+        self.pr_wt = 0
+
+    def set_pw_pu(self, p_pu: float) -> None:
+        self.p_pu = p_pu
+
+    def get_pr_wt(self) -> float:
+        # TODO: pr_wt should send to VPPBox as an output
+        return self.pr_wt
 
     def __str__(self) -> str:
         return self.__class__.__name__ + " : { " + super().__str__() + ", p_max: " + str(self.p_max) + " }"

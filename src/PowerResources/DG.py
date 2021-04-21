@@ -17,6 +17,9 @@ class DG(Resource):
     cost    (float): Cost ($/kWh)
     suc     (float): SUC ($)
     sdc     (float): SDC ($)
+    p_dg    (float): output type: set point power for the DG
+    pr_dg   (float): output type: Kwh price
+    on      (boolean): output type: true to work, false to stop working
     """
 
     def __init__(self, node_id: int, number: int, p_max: float, p_min: float, q_max: float, q_min: float, rup: float,
@@ -33,6 +36,19 @@ class DG(Resource):
         self.cost = cost
         self.suc = suc
         self.sdc = sdc
+        # outputs
+        self.p_dg = 0
+        self.pr_dg = 0
+        self.on = True
+
+    def get_p_dg(self) -> float:
+        return self.p_dg
+
+    def get_pr_dg(self) -> float:
+        return self.pr_dg
+
+    def get_on(self) -> bool:
+        return self.on
 
     def __str__(self) -> str:
         return self.__class__.__name__ + " : { " + super().__str__() + ", p_max: " + str(self.p_max) + ", p_min: " + \

@@ -7,10 +7,22 @@ class PV (Resource):
     node_id     (int): node_id of bus where PV is installed
     number      (int)  : PV object number between all island PhotoVoltaic
     p_max       (float):   p_max in kW
+    p_pu        (float): input type: PV Power prediction
+    pr_wt       (float): output type: Kwh price Pv Installation
     """
     def __init__(self, node_id: int, number: int, p_max: float) -> None:
         super().__init__(node_id, number)
         self.p_max = p_max
+        # inputs
+        self.p_pu = 0
+        # outputs
+        self.pr_pv = 0
+
+    def set_p_pu(self, p_pu: float) -> None:
+        self.p_pu = p_pu
+
+    def get_pr_pv(self) -> float:
+        return self.pr_pv
 
     def __str__(self) -> str:
         return self.__class__.__name__ + " : { "+ super().__str__() + ", p_max: " + str(self.p_max) + " }"

@@ -10,7 +10,9 @@ class FL (Resource):
     lr_pickup   (float): LR_pickup (kW/h)
     lr_drop     (float): LR_drop (kW/h)
     inc         (float): INC ($/kWh)
-    # on          (bool):  indicates activeness of FlexibleLoads
+    p_fl        (float): output type: set point power for the Flexible Load
+    pr_fl       (float): output type: Kwh price
+    on          (bool):  output type: indicates activeness of FlexibleLoads
     """
 
     def __init__(self, node_id: int, number: int, alfa: float, lr_pickup: float, lr_drop: float, inc: float) -> None:
@@ -19,6 +21,19 @@ class FL (Resource):
         self.lr_pickup = lr_pickup
         self.lr_drop = lr_drop
         self.inc = inc
+        # outputs:
+        self.p_fl = 0
+        self.pr_fl = 0
+        self.on = True
+
+    def get_p_fl(self) -> float:
+        return self.p_fl
+
+    def get_pr_fl(self) -> float:
+        return self.pr_fl
+
+    def get_on(self) -> bool:
+        return self.on
 
     def __str__(self) -> str:
         return self.__class__.__name__ + " : { " + super().__str__() + ", alpha: " + str(self.alfa) + ", lr_pickup:" \
