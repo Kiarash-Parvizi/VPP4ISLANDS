@@ -20,7 +20,8 @@ class VppBoxNode(Junction):
     # endpoint (url): API endpoint
     # node_id
     ###
-    def __init__(self, node_id: int, edges: List[int] = [], ip: str = "", port: int = 0) -> None:
+    def __init__(self, node_id: int, p_max: float = 0, i_max: float = 0, edges: List[int] = [], ip: str = "", \
+                 port: int = 0) -> None:
         super().__init__(edges)
         self.ip = ip; self.port = port
         self.node_id = node_id
@@ -33,6 +34,8 @@ class VppBoxNode(Junction):
         self.wf_resources = Mapper[WF]()
         self.flexible_load = 0
         self.fixed_load = 0
+        self.p_max = p_max
+        self.i_max = i_max
 
     def update_data(self) -> None:
         req = ''
