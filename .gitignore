@@ -138,3 +138,17 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# !
+*.xml
+*.iml
+
+# Django #
+*.log
+*.pot
+*.pyc
+__pycache__
+db.sqlite3
+media
+
+.idea
