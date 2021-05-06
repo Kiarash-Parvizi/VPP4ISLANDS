@@ -1,6 +1,8 @@
 vars:
 P_DA_buy
 P_DA_sell
+Q_DA_buy
+Q_DA_sell
 P_DG
 Q_DG
 v_DG_SU
