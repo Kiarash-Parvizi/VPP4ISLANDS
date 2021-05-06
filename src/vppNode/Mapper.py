@@ -27,6 +27,9 @@ class Mapper(Generic[T]):
 
     def contains(self, id: int) -> bool:
         return id in self.mp
+    
+    def len(self) -> int:
+        return len(self.mp)
 
     def getItems(self) -> AbstractSet[Tuple[int, T]]:
         return self.mp.items()
