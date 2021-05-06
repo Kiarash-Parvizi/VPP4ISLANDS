@@ -13,14 +13,16 @@ class Optimizer:
         # create gurobi model
         self.model = gp.Model("model1")
         # add model variable
-        self.__create_variables(NW=1, NT=24, NM=20)
+        self.NW, self.NT, self.NM = 1, 24, 20
+        self.__create_variables()
         # set objective
-        self.model.setObjective(GRB.MINIMIZE)
+        self.set_objective()
         # set constraints
         self.set_constraints()
 
-    def __create_variables(self, NW, NT, NM):
+    def __create_variables(self):
         # tmp vars
+        NW, NT, NM = self.NW, self.NT, self.NM
         vppBoxNodes = self.vppInterface.getVppBoxNodes()
         gridNodes   = self.vppInterface.getGridNodes()
         edgeIds = self.vppInterface.getEdgeIds()
@@ -212,7 +214,7 @@ class Optimizer:
     def set_objective(self):
         ls: List[Tuple[float, Any]] = [
         ]
-        if len(ls) == 0:
+        if len(ls) != self.NW:
             raise Exception('set_objective : err0')
         ob = ls[0][1] * ls[0][0]
         for i in range(1, len(ls)):
