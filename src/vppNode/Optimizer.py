@@ -1,6 +1,7 @@
 from .GridNode import GridNode
 from .VppBoxNode import VppBoxNode
 from .VppInterface import VppInterface
+from typing import Tuple, List, Any
 
 import gurobipy as gp
 from gurobipy import GRB
@@ -185,8 +186,15 @@ class Optimizer:
     def __fetch_data(self):
         self.dat = self.vppInterface.get_optimizer_input_data()
 
-    def set_objective():
-        pass
+    def set_objective(self):
+        ls: List[Tuple[float, Any]] = [
+        ]
+        if len(ls) == 0:
+            raise Exception('set_objective : err0')
+        ob = ls[0][1] * ls[0][0]
+        for i in range(1, len(ls)):
+            ob += ls[i][1] * ls[i][0]
+        self.model.setObjective(ob, GRB.MINIMIZE)
 
     def set_constraints(self):
         # remove old constraints
