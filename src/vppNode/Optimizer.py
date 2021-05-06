@@ -1,3 +1,5 @@
+from .GridNode import GridNode
+from .VppBoxNode import VppBoxNode
 from .VppInterface import VppInterface
 
 import gurobipy as gp
@@ -17,6 +19,9 @@ class Optimizer:
         self.set_constraints()
 
     def __create_variables(self, NW, NT):
+        # tmp vars
+        vppBoxNodes = self.vppInterface.getVppBoxNodes()
+        gridNodes   = self.vppInterface.getGridNodes()
         # var map
         self.var = {
             # format: w,t,['type'..],i
@@ -24,39 +29,140 @@ class Optimizer:
                 t: {
                     'P': {
                         'DA': {
-                            'buy': {},
-                            'sell': {},
+                            'buy': {
+                                nId: self.model.addVar(vtype= GRB.REAL,
+                                        name='%x_%x_P_DA_buy_%x'%(w,t,nId))
+                                for nId, _ in gridNodes
+                            },
+                            'sell': {
+                                nId: self.model.addVar(vtype= GRB.REAL,
+                                        name='%x_%x_P_DA_sell_%x'%(w,t,nId))
+                                for nId, _ in gridNodes
+                            },
                         },
-                        'DG': {},
-                        'ChES' : {}, 
-                        'DchES': {},
-                        'flex': {},
+                        'DG': {
+                            nId: {
+                                i: self.model.addVar(vtype= GRB.REAL,
+                                        name='%x_%x_P_DG_%x_%x'%(w,t,nId,i))
+                                for i, _ in nd.dg_resources.getItems()
+                            }
+                            for nId, nd in vppBoxNodes
+                            if nd.dg_resources.len() > 0
+                        },
+                        'ChES' : {
+                            nId: {
+                                i: self.model.addVar(vtype= GRB.REAL,
+                                        name='%x_%x_P_ChES_%x_%x'%(w,t,nId,i))
+                                for i, _ in nd.es_resources.getItems()
+                            }
+                            for nId, nd in vppBoxNodes
+                            if nd.es_resources.len() > 0
+                        }, 
+                        'DchES': {
+                            nId: {
+                                i: self.model.addVar(vtype= GRB.REAL,
+                                        name='%x_%x_P_DchES_%x_%x'%(w,t,nId,i))
+                                for i, _ in nd.es_resources.getItems()
+                            }
+                            for nId, nd in vppBoxNodes
+                            if nd.es_resources.len() > 0
+                        },
+                        'flex': {
+                            nId: {
+                                i: self.model.addVar(vtype= GRB.REAL,
+                                        name='%x_%x_P_flex_%x_%x'%(w,t,nId,i))
+                                for i, _ in nd.fl_resources.getItems()
+                            }
+                            for nId, nd in vppBoxNodes
+                            if nd.fl_resources.len() > 0
+                        },
                         '+': {},
                         '-': {},
                     },
                     'Q': {
-                        'DG': {},
-                        'flex': {},
+                        'DA': {
+                            'buy': {
+                                nId: self.model.addVar(vtype= GRB.REAL,
+                                        name='%x_%x_Q_DA_buy_%x'%(w,t,nId))
+                                for nId, _ in gridNodes
+                            },
+                            'sell': {
+                                nId: self.model.addVar(vtype= GRB.REAL,
+                                        name='%x_%x_Q_DA_sell_%x'%(w,t,nId))
+                                for nId, _ in gridNodes
+                            },
+                        },
+                        'DG': {
+                            nId: {
+                                i: self.model.addVar(vtype= GRB.REAL,
+                                        name='%x_%x_Q_DG_%x_%x'%(w,t,nId,i))
+                                for i, _ in nd.dg_resources.getItems()
+                            }
+                            for nId, nd in vppBoxNodes
+                            if nd.dg_resources.len() > 0
+                        },
+                        'flex': {
+                            nId: {
+                                i: self.model.addVar(vtype= GRB.REAL,
+                                        name='%x_%x_Q_flex_%x_%x'%(w,t,nId,i))
+                                for i, _ in nd.fl_resources.getItems()
+                            }
+                            for nId, nd in vppBoxNodes
+                            if nd.fl_resources.len() > 0
+                        },
                         '+': {},
                         '-': {},
                     },
                     'v': {
                         'DG': {
-                            'SU': {},
-                            'SD': {},
+                            'SU': {
+                                nId: {
+                                    i: self.model.addVar(vtype= GRB.REAL,
+                                            name='%x_%x_v_DG_SU_%x_%x'%(w,t,nId,i))
+                                    for i, _ in nd.dg_resources.getItems()
+                                }
+                                for nId, nd in vppBoxNodes
+                                if nd.dg_resources.len() > 0
+                            },
+                            'SD': {
+                                nId: {
+                                    i: self.model.addVar(vtype= GRB.REAL,
+                                            name='%x_%x_v_DG_SD_%x_%x'%(w,t,nId,i))
+                                    for i, _ in nd.dg_resources.getItems()
+                                }
+                                for nId, nd in vppBoxNodes
+                                if nd.dg_resources.len() > 0
+                            },
                         },
                     },
                     'U': {
-                        'DG': {},
+                        'DG': {
+                            nId: {
+                                i: self.model.addVar(vtype= GRB.REAL,
+                                        name='%x_%x_v_DG_%x_%x'%(w,t,nId,i))
+                                for i, _ in nd.dg_resources.getItems()
+                            }
+                            for nId, nd in vppBoxNodes
+                            if nd.dg_resources.len() > 0
+                        },
                     },
                     'SOE': {
-                        'ES': {}
+                        'ES': {
+                            nId: {
+                                i: self.model.addVar(vtype= GRB.REAL,
+                                        name='%x_%x_SOE_ES_%x_%x'%(w,t,nId,i))
+                                for i, _ in nd.es_resources.getItems()
+                            }
+                            for nId, nd in vppBoxNodes
+                            if nd.es_resources.len() > 0
+                        }
                     }
                 }
                 for t in range(1, NT+1)
             }
             for w in range(1, NW+1)
         }
+        #
 
     # uses the VppInterface to retrieve input values
     def __fetch_data(self):
