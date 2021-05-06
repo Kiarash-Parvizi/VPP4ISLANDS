@@ -10,7 +10,7 @@ class Optimizer:
         # create gurobi model
         self.model = gp.Model("model1")
         # add model variable
-        self.__create_variables(NSb=1, NW=1, NT=24)
+        self.__create_variables(NSb=1, NW=1, NT=24, NDG=10)
         # set objective
         self.model.setObjective(GRB.MINIMIZE)
         # set constraints
@@ -71,6 +71,54 @@ class Optimizer:
                             t: self.model.addVar(
                                 vtype=GRB.REAL,
                                 name='Q_DG_'+str(i)+'_'+str(w)+'_'+str(t)
+                               )
+                            for t in range(1, NT+1)
+                        }
+                        for w in range(1, NW+1)
+                    }
+                    for i in range(1, NDG+1)
+                },
+            },
+            'v': {
+                'DG': {
+                    'SU': {
+                        # ['v']['DG']['SU'][5][1][24]
+                        i: {
+                            w: {
+                                t: self.model.addVar(
+                                    vtype=GRB.REAL,
+                                    name='v_DG_SU_'+str(i)+'_'+str(w)+'_'+str(t)
+                                   )
+                                for t in range(1, NT+1)
+                            }
+                            for w in range(1, NW+1)
+                        }
+                        for i in range(1, NDG+1)
+                    },
+                    'SD': {
+                        # ['v']['DG']['SD'][5][1][24]
+                        i: {
+                            w: {
+                                t: self.model.addVar(
+                                    vtype=GRB.REAL,
+                                    name='v_DG_SD_'+str(i)+'_'+str(w)+'_'+str(t)
+                                   )
+                                for t in range(1, NT+1)
+                            }
+                            for w in range(1, NW+1)
+                        }
+                        for i in range(1, NDG+1)
+                    },
+                },
+            },
+            'U': {
+                'DG': {
+                    # ['U']['DG'][5][1][24]
+                    i: {
+                        w: {
+                            t: self.model.addVar(
+                                vtype=GRB.REAL,
+                                name='U_DG_'+str(i)+'_'+str(w)+'_'+str(t)
                                )
                             for t in range(1, NT+1)
                         }
