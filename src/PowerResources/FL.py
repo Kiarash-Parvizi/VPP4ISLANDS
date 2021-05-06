@@ -58,3 +58,16 @@ class FL (Resource):
         self.lr_pickup = item['LR_pickup']
         self.lr_drop = item['LR_drop']
         self.inc = item['INC']
+
+    def to_dict(self) -> dict:
+        return self.__dict__
+    
+    @staticmethod
+    def create_from_dict(_dict: dict):
+        return FL(**_dict)
+    
+    def set(self, key: str, value):
+        pass
+    
+    def get(self, key: str):
+        pass

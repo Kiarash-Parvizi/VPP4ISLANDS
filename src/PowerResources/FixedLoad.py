@@ -19,3 +19,16 @@ class FixedLoad:
 
     def get_pr_load(self) -> float:
         return self.pr_load
+
+    def to_dict(self) -> dict:
+        return self.__dict__
+    
+    @staticmethod
+    def create_from_dict(_dict: dict):
+        return FixedLoad(**_dict)
+    
+    def set(self, key: str, value):
+        pass
+    
+    def get(self, key: str):
+        pass

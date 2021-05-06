@@ -91,3 +91,16 @@ class DG(Resource):
         self.cost = item['Cost']
         self.suc = item['SUC']
         self.sdc = item['SDC']
+
+    def to_dict(self) -> dict:
+        return self.__dict__
+    
+    @staticmethod
+    def create_from_dict(_dict: dict):
+        return DG(**_dict)
+    
+    def set(self, key: str, value):
+        pass
+    
+    def get(self, key: str):
+        pass
