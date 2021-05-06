@@ -40,3 +40,16 @@ class WF (Resource):
         self.number = item['WF No.']
         self.node_id = item['Node_id']
         self.p_max = item['P_max']
+
+    def to_dict(self) -> dict:
+        return self.__dict__
+    
+    @staticmethod
+    def create_from_dict(_dict: dict):
+        return WF(**_dict)
+    
+    def set(self, key: str, value):
+        pass
+    
+    def get(self, key: str):
+        pass

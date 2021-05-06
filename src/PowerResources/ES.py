@@ -76,3 +76,16 @@ class ES(Resource):
         self.efficiency_charge = item['Efficiency']
         self.efficiency_discharge = item['Efficiency']
         self.soe_initial = item['SOE_initial']
+
+    def to_dict(self) -> dict:
+        return self.__dict__
+    
+    @staticmethod
+    def create_from_dict(_dict: dict):
+        return ES(**_dict)
+    
+    def set(self, key: str, value):
+        pass
+    
+    def get(self, key: str):
+        pass
