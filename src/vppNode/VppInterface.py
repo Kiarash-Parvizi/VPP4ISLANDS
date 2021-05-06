@@ -38,6 +38,13 @@ class VppInterface:
             if isinstance(val, GridNode):
                 ls.append((key, val))
         return ls
+    
+    # returns a list of all edgesIds
+    def getEdgeIds(self) -> List[int]:
+        ls: List[int] = []
+        for key, _ in self.vppNode.edgeMp.getItems():
+            ls.append(key)
+        return ls
 
     # change the graph and other possible related components based on setpoints
     def distribute_optimizerOutput(dat):
