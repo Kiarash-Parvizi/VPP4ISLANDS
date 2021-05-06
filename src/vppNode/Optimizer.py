@@ -13,13 +13,13 @@ class Optimizer:
         # create gurobi model
         self.model = gp.Model("model1")
         # add model variable
-        self.__create_variables(NW=1, NT=24)
+        self.__create_variables(NW=1, NT=24, NM=20)
         # set objective
         self.model.setObjective(GRB.MINIMIZE)
         # set constraints
         self.set_constraints()
 
-    def __create_variables(self, NW, NT):
+    def __create_variables(self, NW, NT, NM):
         # tmp vars
         vppBoxNodes = self.vppInterface.getVppBoxNodes()
         gridNodes   = self.vppInterface.getGridNodes()
@@ -88,6 +88,14 @@ class Optimizer:
                                     name='%x_%x_P_-_%x'%(w,t,eId))
                             for eId in edgeIds
                         },
+                        'delta': {
+                            m: {
+                                eId: self.model.addVar(vtype= GRB.REAL,
+                                        name='%x_%x_P_delta_%x_%x'%(w,t,m,eId))
+                                for eId in edgeIds
+                            }
+                            for m in range(1, NM+1)
+                        },
                     },
                     'Q': {
                         'DA': {
@@ -129,6 +137,14 @@ class Optimizer:
                             eId: self.model.addVar(vtype= GRB.REAL,
                                     name='%x_%x_Q_-_%x'%(w,t,eId))
                             for eId in edgeIds
+                        },
+                        'delta': {
+                            m: {
+                                eId: self.model.addVar(vtype= GRB.REAL,
+                                        name='%x_%x_Q_delta_%x_%x'%(w,t,m,eId))
+                                for eId in edgeIds
+                            }
+                            for m in range(1, NM+1)
                         },
                     },
                     'v': {
@@ -174,7 +190,14 @@ class Optimizer:
                             for nId, nd in vppBoxNodes
                             if nd.es_resources.len() > 0
                         }
-                    }
+                    },
+                    'S': {
+                        'delta': {
+                            eId: self.model.addVar(vtype= GRB.REAL,
+                                    name='%x_%x_S_delta_%x'%(w,t,eId))
+                            for eId in edgeIds
+                        },
+                    },
                 }
                 for t in range(1, NT+1)
             }
