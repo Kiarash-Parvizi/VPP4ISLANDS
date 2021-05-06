@@ -22,6 +22,7 @@ class Optimizer:
         # tmp vars
         vppBoxNodes = self.vppInterface.getVppBoxNodes()
         gridNodes   = self.vppInterface.getGridNodes()
+        edgeIds = self.vppInterface.getEdgeIds()
         # var map
         self.var = {
             # format: w,t,['type'..],i
@@ -76,8 +77,16 @@ class Optimizer:
                             for nId, nd in vppBoxNodes
                             if nd.fl_resources.len() > 0
                         },
-                        '+': {},
-                        '-': {},
+                        '+': {
+                            eId: self.model.addVar(vtype= GRB.REAL,
+                                    name='%x_%x_P_+_%x'%(w,t,eId))
+                            for eId in edgeIds
+                        },
+                        '-': {
+                            eId: self.model.addVar(vtype= GRB.REAL,
+                                    name='%x_%x_P_-_%x'%(w,t,eId))
+                            for eId in edgeIds
+                        },
                     },
                     'Q': {
                         'DA': {
@@ -110,8 +119,16 @@ class Optimizer:
                             for nId, nd in vppBoxNodes
                             if nd.fl_resources.len() > 0
                         },
-                        '+': {},
-                        '-': {},
+                        '+': {
+                            eId: self.model.addVar(vtype= GRB.REAL,
+                                    name='%x_%x_Q_+_%x'%(w,t,eId))
+                            for eId in edgeIds
+                        },
+                        '-': {
+                            eId: self.model.addVar(vtype= GRB.REAL,
+                                    name='%x_%x_Q_-_%x'%(w,t,eId))
+                            for eId in edgeIds
+                        },
                     },
                     'v': {
                         'DG': {
