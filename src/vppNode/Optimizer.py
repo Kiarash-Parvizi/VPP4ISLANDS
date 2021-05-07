@@ -222,13 +222,14 @@ class Optimizer:
         self.model.setObjective(ob, GRB.MINIMIZE)
 
     def set_constraints(self):
-        # remove old constraints
-        for constr in self.model.getContrs():
-            # remove constr
-            pass
+        self.rem_constraints()
         # fetch data
         self.__fetch_data()
         # add new constraints
+    
+    # removes old constraints
+    def rem_constraints(self):
+        self.model.remove(self.model.getConstrs())
     
     # uses the VppInterface to share the optimizer output with other components
     def distribute_results(self):
