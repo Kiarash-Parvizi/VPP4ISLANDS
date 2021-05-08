@@ -74,6 +74,17 @@ class VppInterface:
                 ls.append(key)
         return ls
 
+    # returns a list of all nodeIds which are adjacent to the selected node
+    def getAdjNodeIds(self, nId, type = Junction) -> List[int]:
+        node = self.vppNode.junctionMp.get(nId)
+        ls = []
+        for eId in node.edges:
+            id = self.vppNode.edgeMp.get(eId).getAdjJunction(nId)
+            nd = self.vppNode.junctionMp.get(id)
+            if isinstance(nd, type):
+                ls.append(id)
+        return ls
+
     # returns a list of all vppBoxNodes
     def getVppBoxNodes(self) -> List[Tuple[int, VppBoxNode]]:
         ls: List[Tuple[int, VppBoxNode]] = []
