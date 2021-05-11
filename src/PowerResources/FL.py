@@ -73,7 +73,7 @@ class FL (Resource):
     def set(self, key: str, value, w: int, t: int):
         sp_key = key.split("_")
         key = "_".join(sp_key[2: len(sp_key) - 3])
-        print(key)
+
         # active scheduled power of flexible load
         if key == "P_flex":
             if w not in self.sp_p_flex:
