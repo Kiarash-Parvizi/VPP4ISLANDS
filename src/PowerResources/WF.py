@@ -48,7 +48,7 @@ class WF (Resource):
     def create_from_dict(_dict: dict):
         return WF(**_dict)
     
-    def set(self, key: str, value):
+    def set(self, key: str, value, w: int, t: int):
         pass
     
     def get(self, key: str):
