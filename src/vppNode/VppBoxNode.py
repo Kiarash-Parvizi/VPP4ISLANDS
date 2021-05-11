@@ -102,3 +102,21 @@ class VppBoxNode(Junction):
         data = res['data']
         if res['status'] != 404:
             self.fixed_load = data['load']
+
+    def to_dict(self) -> dict:
+        obj = {}
+        obj['_id'] = self.node_id
+        obj['node_id'] = self.node_id
+        obj['flexible_load'] = self.flexible_load
+        obj['fixed_load'] = self.fixed_load
+        obj['p_max'] = self.p_max
+        obj['i_max'] = self.i_max
+        obj['ip'] = self.ip
+        obj['port'] = self.port
+        obj['endpoint'] = self.endpoint
+        obj['edges'] = self.edges
+        return obj
+    
+    @staticmethod
+    def create_from_dict(self, _dict: dict):
+        return VppBoxNode(**_dict)
