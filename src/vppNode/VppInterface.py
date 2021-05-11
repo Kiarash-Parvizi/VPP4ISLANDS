@@ -108,5 +108,77 @@ class VppInterface:
         return ls
 
     # change the graph and other possible related components based on setpoints
-    def distribute_optimizerOutput(dat):
-        pass
+    def distribute_optimizerOutput(self, var, NW, NT, NM):
+        # set func
+        def setF(busObj, w: int, t: int, v):
+            ''' v: gurobiVar '''
+            busObj.set(v.varName, v.x, w, t)
+        # tmp vars
+        vppBoxNodes = self.getVppBoxNodes()
+        gridNodes   = self.getGridNodes()
+        # set
+        for w in range(1, NW+1):
+            for t in range(1, NT+1):
+                L0 = var[w][t]
+                # over gridNodes:
+                P_DA = L0['P']['DA']
+                Q_DA = L0['Q']['DA']
+                for nId, obj in gridNodes:
+                    setF(obj, w, t, P_DA['buy'][nId])
+                    setF(obj, w, t, P_DA['sell'][nId])
+                    setF(obj, w, t, Q_DA['buy'][nId])
+                    setF(obj, w, t, Q_DA['sell'][nId])
+                # over vppBoxNodes:
+                P_DG    = L0['P']['DG']
+                Q_DG    = L0['Q']['DG']
+                P_ChES  = L0['P']['ChES']
+                P_DchES = L0['P']['DchES']
+                P_flex  = L0['P']['flex']
+                Q_flex  = L0['Q']['flex']
+                P_plus  = L0['P']['+']
+                P_minus = L0['P']['-']
+                P_delta = L0['P']['delta']
+                Q_plus  = L0['P']['+']
+                Q_minus = L0['P']['-']
+                Q_delta = L0['Q']['delta']
+                S_delta = L0['S']['delta']
+                v_DG    = L0['v']['DG']
+                U_DG    = L0['U']['DG']
+                SOE_ES  = L0['SOE']['ES']
+                for nId, nd in vppBoxNodes:
+                    # dg
+                    if nd.dg_resources.len() > 0:
+                        for i, obj in nd.dg_resources.getItems():
+                            setF(obj, w, t, P_DG[nId][i])
+                            setF(obj, w, t, Q_DG[nId][i])
+                            setF(obj, w, t, v_DG['SU'][nId][i])
+                            setF(obj, w, t, v_DG['SD'][nId][i])
+                            setF(obj, w, t, U_DG[nId][i])
+                    # es
+                    if nd.es_resources.len() > 0:
+                        for i, obj in nd.es_resources.getItems():
+                            setF(obj, w, t, P_ChES[nId][i])
+                            setF(obj, w, t, P_DchES[nId][i])
+                            setF(obj, w, t, SOE_ES[nId][i])
+                    # fl
+                    if nd.fl_resources.len() > 0:
+                        for i, obj in nd.fl_resources.getItems():
+                            setF(obj, w, t, P_flex[nId][i])
+                            setF(obj, w, t, Q_flex[nId][i])
+                    # directed edges
+                    adj_nodes = self.getAdjNodeIds(nId, VppBoxNode)
+                    if len(adj_nodes) != 0:
+                        for nId_p in adj_nodes:
+                            # TODO
+                            #setF(obj, w, t, P_plus[nId][nId_p])
+                            #setF(obj, w, t, P_minus[nId][nId_p])
+                            #setF(obj, w, t, Q_plus[nId][nId_p])
+                            #setF(obj, w, t, Q_minus[nId][nId_p])
+                            # m:
+                            for m in range(1, NM+1):
+                                # TODO
+                                #setF(obj, w, t, P_delta[nId][nId_p][m])
+                                #setF(obj, w, t, Q_delta[nId][nId_p][m])
+                                #setF(obj, w, t, S_delta[nId][nId_p])
+                                pass
+        # end of distribute_optimizerOutput
