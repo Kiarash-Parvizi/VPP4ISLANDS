@@ -105,7 +105,7 @@ class DG(Resource):
     def create_from_dict(_dict: dict):
         return DG(**_dict)
     
-    def set(self, key: str, w: int, t: int, value):
+    def set(self, key: str, value, w: int, t: int):
         sp_key = key.split("_")
         key = "_".join(sp_key[2: len(sp_key) - 3])
 

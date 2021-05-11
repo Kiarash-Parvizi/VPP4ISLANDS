@@ -1,3 +1,4 @@
+from src.vppNode.VppBoxNode import VppBoxNode
 from typing import Mapping, Tuple
 
 from .LineProps import LineProps
@@ -55,3 +56,27 @@ class VppNode:
             jLs.append(jId)
         for jId in jLs:
             self.rem_junction(jId)
+
+    # returns the edgeId that connects nodeIds
+    def get_edgeId(self, nodeIds: Tuple[int,int]) -> int:
+        nd0 = self.junctionMp.get(nodeIds[0])
+        nd1 = self.junctionMp.get(nodeIds[1])
+        if nd0 == None or nd1 == None:
+            raise Exception('get_edgeId : err0')
+        for eId in nd0.edges:
+            if eId in nd1.edges:
+                return eId
+
+    # returns nodeIds which are connected by an edge with id of edgeId
+    def get_nodeIds(self, edgeId) -> Tuple[int,int]:
+        e0 = self.edgeMp.get(edgeId)
+        if e0 == None:
+            raise Exception('get_edgeId : err0')
+        return e0.junctions
+
+    # returns BusIds which are connected by an edge with id of edgeId
+    def get_BusIds(self, edgeId) -> Tuple[int,int]:
+        e0 = self.edgeMp.get(edgeId)
+        if (e0 == None):
+            raise Exception('get_BusIds : err0')
+        return e0.junctions

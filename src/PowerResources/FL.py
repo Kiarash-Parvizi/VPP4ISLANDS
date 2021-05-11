@@ -70,7 +70,7 @@ class FL (Resource):
     def create_from_dict(_dict: dict):
         return FL(**_dict)
     
-    def set(self, key: str, w: int, t: int, value):
+    def set(self, key: str, value, w: int, t: int):
         sp_key = key.split("_")
         key = "_".join(sp_key[2: len(sp_key) - 3])
         print(key)
@@ -110,7 +110,3 @@ class FL (Resource):
             return self.lr_drop
 
         raise(KeyError("there is no such key for FL"))
-
-if __name__ == "__main__":
-    fl = FL()
-    fl.set("12_15_P_flex_14_1_423", 10, 15, 22.3)

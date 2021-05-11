@@ -13,6 +13,10 @@ P_DchES
 SOE_ES
 P_flex
 
+P_delta
+Q_delta
+S_delta
+
 parameters:
 SUC_DG
 SDC_DG
