@@ -25,7 +25,6 @@ class Optimizer:
         NW, NT, NM = self.NW, self.NT, self.NM
         vppBoxNodes = self.vppInterface.getVppBoxNodes()
         gridNodes   = self.vppInterface.getGridNodes()
-        edgeIds = self.vppInterface.getEdgeIds()
         # var map
         self.var = {
             # format: w,t,['type'..],i
@@ -78,7 +77,7 @@ class Optimizer:
         #
         # asn
         for w in range(1, NW+1):
-            for t in range(1, NW+1):
+            for t in range(1, NT+1):
                 L0 = self.var[w][t]
                 # over gridNodes:
                 P_DA = L0['P']['DA']
@@ -177,10 +176,6 @@ class Optimizer:
                                     name='%x_%x_Q_delta_%x_%x_%x'%(w,t,nId,nId_p,m))
                                 S_delta[nId][nId_p] = self.model.addVar(vtype= GRB.REAL,
                                     name='%x_%x_S_delta_%x_%x'%(w,t,nId,nId_p))
-        #nId: 
-        #        
-        #nId: self.model.addVar(vtype= GRB.REAL,
-        #        ))
         #
 
     # uses the VppInterface to retrieve input values
@@ -209,4 +204,4 @@ class Optimizer:
     
     # uses the VppInterface to share the optimizer output with other components
     def distribute_results(self):
-        self.vppInterface.distribute_optimizerOutput(self.dat)
+        self.vppInterface.distribute_optimizerOutput(self.var)
