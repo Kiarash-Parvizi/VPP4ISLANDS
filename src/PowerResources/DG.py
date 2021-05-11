@@ -6,17 +6,17 @@ class DG(Resource):
     Attributes:
     node_id (int)  : node_id of bus where DG is installed
     number  (int)  : DG object number between all island Distributed Generators
-    p_max   (float): p_max (kW)
-    p_min   (float): p_min (kW)
-    q_max   (float): Q_max (kW)
-    q_min   (float): Q_min (kW)
-    rup     (float): Rup (kW/h)
-    rdn     (float): Rdn (kW/h)
-    mut     (float): MUT (h)
-    mdt     (float): MDT (h)
-    cost    (float): Cost ($/kWh)
-    suc     (float): SUC ($)
-    sdc     (float): SDC ($)
+    p_max   (float): p_max (kW) maximum installed power
+    p_min   (float): p_min (kW) Minimum power
+    q_max   (float): Q_max (kW) maximum reactive power
+    q_min   (float): Q_min (kW) Minimum reactive power
+    rup     (float): Rup (kW/h) Ramp up rates of DGs
+    rdn     (float): Rdn (kW/h) Ramp down rates of DGs
+    mut     (float): MUT (h) Minimum up times of DGs
+    mdt     (float): MDT (h) Minimum down times of DGs
+    cost    (float): Cost ($/kWh) Generation cost of DGs
+    suc     (float): SUC ($) Start-up/shut-down costs of conventional DGs
+    sdc     (float): SDC ($) Start-up/shut-down costs of conventional DGs
     p_dg    (float): output type: set point power for the DG
     pr_dg   (float): output type: Kwh price
     on      (boolean): output type: true to work, false to stop working
@@ -40,6 +40,12 @@ class DG(Resource):
         self.p_dg = 0
         self.pr_dg = 0
         self.on = True
+        # setpoints
+        self.sp_p_dg = {}
+        self.sp_q_dg = {}
+        self.sp_v_dg_su = {}
+        self.sp_v_dg_sd = {}
+        self.sp_u_dg = {}
 
     def get_p_dg(self) -> float:
         return self.p_dg
@@ -99,8 +105,70 @@ class DG(Resource):
     def create_from_dict(_dict: dict):
         return DG(**_dict)
     
-    def set(self, key: str, value):
-        pass
-    
+    def set(self, key: str, w: int, t: int, value):
+        sp_key = key.split("_")
+        key = "_".join(sp_key[2: len(sp_key) - 3])
+
+        # Active output power of DG units
+        if key == "P_DG":
+            if w not in self.sp_p_dg:
+                self.sp_p_dg[w] = {}
+            self.sp_p_dg[w][t] = value
+        # Reactive output power of DG units
+        elif key == "Q_DG":
+            if w not in self.sp_q_dg:
+                self.sp_q_dg[w] = {}
+            self.sp_q_dg[w][t] = value
+        # Start-up binary variables of DG units
+        elif key == "v_DG_SU":
+            if w not in self.sp_v_dg_su:
+                self.sp_v_dg_su[w] = {}
+            self.sp_v_dg_su[w][t] = value
+        # shut-down binary variables of DG units
+        elif key == "v_DG_SD":
+            if w not in self.sp_v_dg_sd:
+                self.sp_v_dg_sd[w] = {}
+            self.sp_v_dg_sd[w][t] = value
+        # Binary variable indicates on/off situation of DG units
+        elif key == "U_DG":
+            if w not in self.sp_u_dg:
+                self.sp_u_dg[w] = {}
+            self.sp_u_dg[w][t] = value
+        else:
+            raise(KeyError("there is no such key for DG"))
+
     def get(self, key: str):
-        pass
+        # start-up costs of conventional DGs
+        if key == "SUC_DG":
+            return self.suc
+        # shut-down costs of conventional DGs
+        if key == "SDC_DG":
+            return self.sdc
+        # Generation cost of DGs
+        if key == "C_DG":
+            return self.cost
+        # Minimum active power of DGs
+        if key == "P_DG_min":
+            return self.p_min
+        # Maximum active power of DGs
+        if key == "P_DG_max":
+            return self.p_max
+        # Minimum reactive power of DGs
+        if key == "Q_DG_min":
+            return self.q_min
+        # Maximum reactive power of DGs
+        if key == "Q_DG_max":
+            return self.q_max
+        # Ramp up rates of DGs
+        if key == "RU_DG":
+            return self.rup
+        # Ramp down rates of DGs
+        if key == "RD_DG":
+            return self.rdn
+        # Minimum up times of DGs
+        if key == "MUT":
+            return self.mut
+        # Minimum down times of DGs
+        if key == "MDT":
+            return self.mdt
+        raise(KeyError("there is no such key for DG"))

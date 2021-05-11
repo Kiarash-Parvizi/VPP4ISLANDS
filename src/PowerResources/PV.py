@@ -6,9 +6,9 @@ class PV (Resource):
     Attributes:
     node_id     (int): node_id of bus where PV is installed
     number      (int)  : PV object number between all island PhotoVoltaic
-    p_max       (float):   p_max in kW
+    p_max       (float): p_max in kW maximum installed power
     p_pu        (float): input type: PV Power prediction
-    pr_wt       (float): output type: Kwh price Pv Installation
+    pr_pv       (float): output type: Kwh price Pv Installation
     """
     def __init__(self, node_id: int, number: int, p_max: float) -> None:
         super().__init__(node_id, number)
@@ -47,8 +47,13 @@ class PV (Resource):
     def create_from_dict(_dict: dict):
         return PV(**_dict)
     
-    def set(self, key: str, value):
-        pass
+    def set(self, key: str, w: int, t: int, value):
+        raise(KeyError("there is no such key for PV"))
     
     def get(self, key: str):
-        pass
+        # PV power generation
+        if key == "P_PV":
+            # TODO: ?
+            return
+        
+        raise(KeyError("there is no such key for PV"))

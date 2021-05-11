@@ -6,10 +6,11 @@ class FL (Resource):
     Attributes:
     node_id     (int)  : node_id of bus where FlexibleLoads is installed
     number  (int)  : FL object number between all island Flexible Loads
-    alfa        (float): Alfa (%)
-    lr_pickup   (float): LR_pickup (kW/h)
-    lr_drop     (float): LR_drop (kW/h)
-    inc         (float): INC ($/kWh)
+    p_max       (float): Pmax (kW) Installed power # TODO: NO API SUPPORT! CHECK IT (DOES NOT ADDED TO __init__)
+    alfa        (float): Alfa (%) Flexibility portion of loads
+    lr_pickup   (float): LR_pickup (kW/h) Load pick-up and drop rates
+    lr_drop     (float): LR_drop (kW/h) Load pick-up and drop rates
+    inc         (float): INC ($/kWh) incentives
     p_fl        (float): output type: set point power for the Flexible Load
     pr_fl       (float): output type: Kwh price
     on          (bool):  output type: indicates activeness of FlexibleLoads
@@ -25,6 +26,9 @@ class FL (Resource):
         self.p_fl = 0
         self.pr_fl = 0
         self.on = True
+        # setpoints
+        self.sp_p_flex = {}
+        self.sp_q_flex = {}
 
     def get_p_fl(self) -> float:
         return self.p_fl
@@ -66,8 +70,47 @@ class FL (Resource):
     def create_from_dict(_dict: dict):
         return FL(**_dict)
     
-    def set(self, key: str, value):
-        pass
-    
+    def set(self, key: str, w: int, t: int, value):
+        sp_key = key.split("_")
+        key = "_".join(sp_key[2: len(sp_key) - 3])
+        print(key)
+        # active scheduled power of flexible load
+        if key == "P_flex":
+            if w not in self.sp_p_flex:
+                self.sp_p_flex[w] = {}
+            self.sp_p_flex[w][t] = value
+        # reactive scheduled power of flexible load
+        elif key == "Q_flex":
+            if w not in self.sp_q_flex:
+                self.sp_q_flex[w] = {}
+            self.sp_q_flex[w][t] = value
+        else:
+            raise(KeyError("there is no such key for FL"))
+
     def get(self, key: str):
-        pass
+        # Incentive payment to flexible loads
+        if key == "INC":
+            return self.inc
+        # Active loads
+        if key == "P_L":
+            # TODO: ?
+            pass
+        # Reactive loads
+        if key == "Q_L":
+            # TODO: ?
+            pass
+        # Flexibility portion of loads
+        if key == "alpha_flex":
+            return self.alfa
+        # Load pick-up rates
+        if key == "LR_pickup":
+            return self.lr_pickup
+        # Load drop rates
+        if key == "LR_drop":
+            return self.lr_drop
+
+        raise(KeyError("there is no such key for FL"))
+
+if __name__ == "__main__":
+    fl = FL()
+    fl.set("12_15_P_flex_14_1_423", 10, 15, 22.3)

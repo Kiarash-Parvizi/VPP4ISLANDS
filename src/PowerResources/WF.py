@@ -48,8 +48,13 @@ class WF (Resource):
     def create_from_dict(_dict: dict):
         return WF(**_dict)
     
-    def set(self, key: str, value):
-        pass
+    def set(self, key: str, w: int, t: int, value):
+        raise(KeyError("there is no such key for WF"))
     
     def get(self, key: str):
-        pass
+        # Wind farm Power gereration
+        if key == "P_Wind":
+            # TODO: ?
+            return
+        
+        raise(KeyError("there is no such key for WF"))

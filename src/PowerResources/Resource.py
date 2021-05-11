@@ -22,3 +22,10 @@ class Resource:
     @abstractmethod
     def get_instance_by_json(item: dict):
         pass
+
+    def to_dict(self) -> dict:
+        return self.__dict__
+    
+    @staticmethod
+    def create_from_dict(_dict: dict):
+        return Resource(**_dict)
