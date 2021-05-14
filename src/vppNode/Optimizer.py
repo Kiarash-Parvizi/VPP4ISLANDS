@@ -15,10 +15,8 @@ class Optimizer:
         # add model variable
         self.NW, self.NT, self.NM = 1, 24, 20
         self.__create_variables()
-        # set objective
-        self.set_objective()
-        # set constraints
-        self.set_constraints()
+        # set equations
+        self.set_equations()
 
     def __create_variables(self):
         # tmp vars
@@ -182,8 +180,35 @@ class Optimizer:
     def __fetch_data(self):
         self.dat = self.vppInterface.get_optimizer_input_data()
 
-    def set_objective(self):
+    def __set_objective(self):
+        # tmp vars
+        NW, NT, NM = self.NW, self.NT, self.NM
+        vppBoxNodes = self.vppBoxNodes
+        gridNodes   = self.gridNodes
+        dat, var = self.dat, self.var
+        # Min Func 1:
+        PMF1 = 1
+        MF1 = gp.LinExpr()
+        for t in range(1, NT+1):
+            for nId, _ in gridNodes:
+                L0 = var[1][t]['P']['DA']
+                MF1 += dat['lambda_DA'][t]*(L0['buy'][nId] - L0['sell'][nId])
+            for i0, nd in vppBoxNodes:
+                # dg
+                if nd.dg_resources.len() > 0:
+                    for i1, _ in nd.dg_resources.getItems():
+                        MF1 += dat['C_DG'][i0][i1] * var[1][t]['P']['DG'][i1]
+                        MF1 += dat['SUC_DG'][i0][i1] * var[1][t]['v']['DG']['SU'][i1]
+                        MF1 += dat['SDC_DG'][i0][i1] * var[1][t]['v']['DG']['SD'][i1]
+                # es
+                if nd.es_resources.len() > 0:
+                    pass
+                # fl
+                if nd.fl_resources.len() > 0:
+                    MF1 += dat['INC'][i0][i1] * var[1][t]['P']['flex'][i1]
+        #
         ls: List[Tuple[float, Any]] = [
+            (PMF1, MF1)
         ]
         if len(ls) != self.NW:
             raise Exception('set_objective : err0')
@@ -192,11 +217,18 @@ class Optimizer:
             ob += ls[i][1] * ls[i][0]
         self.model.setObjective(ob, GRB.MINIMIZE)
 
-    def set_constraints(self):
+    def __set_constraints(self):
         self.rem_constraints()
+        # add new constraints
+    
+    def set_equations(self):
+        self.vppBoxNodes = self.vppInterface.getVppBoxNodes()
+        self.gridNodes   = self.vppInterface.getGridNodes()
         # fetch data
         self.__fetch_data()
-        # add new constraints
+        # set equations
+        self.__set_objective()
+        self.__set_constraints()
     
     # removes old constraints
     def rem_constraints(self):
