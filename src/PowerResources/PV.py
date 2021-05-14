@@ -1,5 +1,5 @@
 from .Resource import Resource
-
+from src.Forecaster.Forecaster import Forecaster
 
 class PV (Resource):
     """PhotoVoltaic class from Resources
@@ -53,7 +53,6 @@ class PV (Resource):
     def get(self, key: str):
         # PV power generation
         if key == "P_PV":
-            # TODO: ?
-            return
+            return Forecaster(self.node_id).get_pv()
         
         raise(KeyError("there is no such key for PV"))

@@ -1,0 +1,13 @@
+version: "3.7"
+services: 
+    VPP4ISLAND_Mongo:
+        image: mongo:latest
+        environment: 
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: 1234
+        ports: 
+            - 27017:27017
+        volumes: 
+            - vppnode-db:/data/d
+volumes: 
+    vppnode-db:
