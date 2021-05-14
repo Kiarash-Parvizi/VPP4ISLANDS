@@ -1,5 +1,5 @@
 from .Resource import Resource
-
+from src.Forecaster.Forecaster import Forecaster
 
 class WF (Resource):
     """Wind Farm class from Resources
@@ -54,7 +54,6 @@ class WF (Resource):
     def get(self, key: str):
         # Wind farm Power gereration
         if key == "P_Wind":
-            # TODO: ?
-            return
+            return Forecaster(self.node_id).get_wind()
         
         raise(KeyError("there is no such key for WF"))

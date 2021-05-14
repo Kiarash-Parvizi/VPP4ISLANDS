@@ -1,4 +1,4 @@
-
+from src.Forecaster.Forecaster import Forecaster
 
 class FixedLoad:
     """Fixed Load class
@@ -30,5 +30,12 @@ class FixedLoad:
     def set(self, key: str, value, w: int, t: int):
         pass
     
-    def get(self, key: str):
-        pass
+    def get(self, key: str, t: int):
+        # Active loads
+        if key == "P_L":
+           return Forecaster(self.node_id).get_pl(t=t)
+        # Reactive loads
+        if key == "Q_L":
+            return Forecaster(self.node_id).get_ql(t=t)
+        
+        raise(KeyError("there is no such key for FixedLoad"))

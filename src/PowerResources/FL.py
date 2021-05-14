@@ -91,14 +91,6 @@ class FL (Resource):
         # Incentive payment to flexible loads
         if key == "INC":
             return self.inc
-        # Active loads
-        if key == "P_L":
-            # TODO: ?
-            pass
-        # Reactive loads
-        if key == "Q_L":
-            # TODO: ?
-            pass
         # Flexibility portion of loads
         if key == "alpha_flex":
             return self.alfa
