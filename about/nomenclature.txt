@@ -20,6 +20,8 @@ S_delta
 parameters:
 SUC_DG
 SDC_DG
+rho
+lambda_DA
 C_DG
 INC
 P_PV
