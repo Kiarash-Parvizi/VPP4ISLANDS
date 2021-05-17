@@ -11,7 +11,8 @@ U_DG
 P_ChES
 P_DchES
 SOE_ES
-P_flex
+SP_flex
+SQ_flex
 
 P_delta
 Q_delta
@@ -23,11 +24,11 @@ SDC_DG
 rho
 lambda_DA
 C_DG
-INC
+SINC
 P_PV
 P_Wind
-P_L
-Q_L
+SP_L
+SQ_L
 P_DG_min
 P_DG_max
 Q_DG_min
@@ -36,9 +37,9 @@ RU_DG
 RD_DG
 MUT
 MDT
-alpha_flex
-LR_pickup
-LR_drop
+Salpha_flex
+SLR_pickup
+SLR_drop
 P_ChES_max
 P_DchES_max
 eta_ES
