@@ -14,21 +14,20 @@ class VppInterface:
     def get_optimizer_input_data(self):
         dat = {
             # TODO: P_PV(pv,w,t) P_Wind(wf,w,t) P/Q_L(j,t)
-            'eta': {
-                'ES': {
-                    'Ch': 1,
-                    'Dch': 2,
-                }
+            'eta_ES_Ch': {
+                1
+            },
+            'eta_ES_Dch': {
+                2
             },
             'rho': {
-                w: 'get from somewhere else'
-                for w in range(1)
+                {1}
+                #w: 'get from somewhere else'
+                #for w in range(1)
             },
-            'lambda': {
-                'DA': {
-                    t: 'get from somewhere else'
-                    for t in range(1)
-                }
+            'lambda_DA': {
+                t: 'get from somewhere else'
+                for t in range(1)
             },
         }
         gridNodes, vppBoxNodes = self.getGridNodes(), self.getVppBoxNodes()

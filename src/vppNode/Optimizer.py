@@ -15,10 +15,8 @@ class Optimizer:
         # add model variable
         self.NW, self.NT, self.NM = 1, 24, 20
         self.__create_variables()
-        # set objective
-        self.set_objective()
-        # set constraints
-        self.set_constraints()
+        # set equations
+        self.set_equations()
 
     def __create_variables(self):
         # tmp vars
@@ -182,8 +180,38 @@ class Optimizer:
     def __fetch_data(self):
         self.dat = self.vppInterface.get_optimizer_input_data()
 
-    def set_objective(self):
+    def __set_objective(self):
+        # tmp vars
+        NW, NT, NM = self.NW, self.NT, self.NM
+        vppBoxNodes = self.vppBoxNodes
+        gridNodes   = self.gridNodes
+        dat, var = self.dat, self.var
+        # Min Func 1:
+        PMF1 = 1
+        MF1 = gp.LinExpr()
+        for t in range(1, NT+1):
+            for nId, _ in gridNodes:
+                L0 = var[1][t]['P']['DA']
+                MF1 += dat['lambda_DA'][t]*(L0['buy'][nId] - L0['sell'][nId])
+            for i0, nd in vppBoxNodes:
+                # dg
+                if nd.dg_resources.len() > 0:
+                    for i1, _ in nd.dg_resources.getItems():
+                        MF1 += dat['C_DG'][i0][i1] * var[1][t]['P']['DG'][i1]
+                        MF1 += dat['SUC_DG'][i0][i1] * var[1][t]['v']['DG']['SU'][i1]
+                        MF1 += dat['SDC_DG'][i0][i1] * var[1][t]['v']['DG']['SD'][i1]
+                # es
+                if nd.es_resources.len() > 0:
+                    #for i1, _ in nd.es_resources.getItems():
+                    #    pass
+                    pass
+                # fl
+                if nd.fl_resources.len() > 0:
+                    for i1, _ in nd.fl_resources.getItems():
+                        MF1 += dat['INC'][i0][i1] * var[1][t]['P']['flex'][i1]
+        #
         ls: List[Tuple[float, Any]] = [
+            (PMF1, MF1)
         ]
         if len(ls) != self.NW:
             raise Exception('set_objective : err0')
@@ -192,14 +220,85 @@ class Optimizer:
             ob += ls[i][1] * ls[i][0]
         self.model.setObjective(ob, GRB.MINIMIZE)
 
-    def set_constraints(self):
-        self.rem_constraints()
+    def __set_constraints(self):
+        self.__rem_constraints()
+        # tmp vars
+        NW, NT, NM = self.NW, self.NT, self.NM
+        vppBoxNodes = self.vppBoxNodes
+        gridNodes   = self.gridNodes
+        dat, var = self.dat, self.var
+        #
+        # add new constraints
+        for w in range(1, NW+1):
+            for t in range(1, NT+1):
+                vi = var[w][t]
+                for nId, _ in gridNodes:
+                    L0 = vi['P']['DA']
+                    L1 = vi['Q']['DA']
+                    self.model.addConstr(L0['buy']-L0['sell']==0, "c_sest_2_%i_%i_%i"%(w,t,nId))
+                    self.model.addConstr(L1['buy']-L1['sell']==0, "c_sest_3_%i_%i_%i"%(w,t,nId))
+                for i0, nd in vppBoxNodes:
+                    expr_sest_2_2, expr_sest_3_2 = gp.LinExpr(), gp.LinExpr()
+                    # dg
+                    if nd.dg_resources.len() > 0:
+                        for i1, _ in nd.dg_resources.getItems():
+                            expr_sest_2_2 += vi['P']['DG'][i1]
+                            expr_sest_3_2 += vi['Q']['DG'][i1]
+                            self.model.addConstr(
+                                dat['P_DG_min'][i0][i1] *
+                                vi['U']['DG'][i1] <=
+                                vi['P']['DG'][i1] <=
+                                dat['P_DG_max'][i0][i1] *
+                                vi['U']['DG'][i1],
+                                'c_sest_4_%i_%i_%i_%i'%(w,t,i0,i1)
+                            )
+                            self.model.addConstr(
+                                dat['Q_DG_min'][i0][i1] *
+                                vi['U']['DG'][i1] <=
+                                vi['Q']['DG'][i1] <=
+                                dat['Q_DG_max'][i0][i1] *
+                                vi['U']['DG'][i1],
+                                'c_sest_5_%i_%i_%i_%i'%(w,t,i0,i1)
+                            )
+                    # es
+                    if nd.pv_resources.len() > 0:
+                        for i1, _ in nd.pv_resources.getItems():
+                            expr_sest_2_2 += dat['P_PV'][i0][i1][w][t]
+                    # es
+                    if nd.es_resources.len() > 0:
+                        for i1, _ in nd.es_resources.getItems():
+                            expr_sest_2_2 += vi['DchES'][i1] - vi['ChES'][i1]
+                            pass
+                    # wf
+                    if nd.wf_resources.len() > 0:
+                        for i1, _ in nd.wf_resources.getItems():
+                            expr_sest_2_2 += dat['P_Wind'][i0][i1][w][t]
+                            pass
+                    # fl
+                    if nd.fl_resources.len() > 0:
+                        for i1, _ in nd.fl_resources.getItems():
+                            pass
+                    # directed edges
+                    adj_nodes = self.vppInterface.getAdjNodeIds(i0, VppBoxNode)
+                    if len(adj_nodes) != 0:
+                        for bp in adj_nodes:
+                            expr_sest_2_2 += vi['P']['+'][bp][i0] - vi['P']['-'][bp][i0]
+                            expr_sest_3_2 += vi['Q']['+'][bp][i0] - vi['Q']['-'][bp][i0]
+                    self.model.addConstr(expr_sest_2_2==0, "c_sest_2_2_%i_%i_%i"%(w,t,i0))
+                    self.model.addConstr(expr_sest_3_2==0, "c_sest_3_2_%i_%i_%i"%(w,t,i0))
+        pass
+    
+    def set_equations(self):
+        self.vppBoxNodes = self.vppInterface.getVppBoxNodes()
+        self.gridNodes   = self.vppInterface.getGridNodes()
         # fetch data
         self.__fetch_data()
-        # add new constraints
+        # set equations
+        self.__set_objective()
+        self.__set_constraints()
     
     # removes old constraints
-    def rem_constraints(self):
+    def __rem_constraints(self):
         self.model.remove(self.model.getConstrs())
     
     # uses the VppInterface to share the optimizer output with other components
