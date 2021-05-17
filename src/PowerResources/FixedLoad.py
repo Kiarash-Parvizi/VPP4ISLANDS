@@ -1,5 +1,6 @@
 from src.Forecaster.Forecaster import Forecaster
 
+
 class FixedLoad:
     """Fixed Load class
         Attributes:
@@ -7,6 +8,7 @@ class FixedLoad:
         p_consumption   (float): input type - from smart meter when installed
         pr_load         (float): output type - Kwh price
         """
+
     def __init__(self, node_id: int):
         self.node_id = node_id
         # input
@@ -22,20 +24,20 @@ class FixedLoad:
 
     def to_dict(self) -> dict:
         return self.__dict__
-    
+
     @staticmethod
     def create_from_dict(_dict: dict):
         return FixedLoad(**_dict)
-    
+
     def set(self, key: str, value, w: int, t: int):
         pass
-    
-    def get(self, key: str, t: int):
+
+    def get(self, key: str):
         # Active loads
         if key == "P_L":
-           return Forecaster(self.node_id).get_pl(t=t)
+            return Forecaster(self.node_id).get_pl()
         # Reactive loads
         if key == "Q_L":
-            return Forecaster(self.node_id).get_ql(t=t)
-        
-        raise(KeyError("there is no such key for FixedLoad"))
+            return Forecaster(self.node_id).get_ql()
+
+        raise (KeyError("there is no such key for FixedLoad"))

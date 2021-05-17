@@ -1,28 +1,63 @@
 import requests
 from src.Forecaster.UncertaintyParams import UncertaintyParams
 
+
 class Forecaster:
     """ Connects to ForecasterAPI and gets params.
     """
+
     def __init__(self, node_id: int = None) -> None:
         self.pf = 0.6197
         self.node_id = node_id
         self.forecaster_connector = ForecasterAPI(self.node_id)
-    
-    def get_wind(self, w: int, t: int):
-        return self.forecaster_connector.get_wind(w=w, t=t)
-    
-    def get_pv(self, w: int, t: int):
-        return self.forecaster_connector.get_pv(w=w, t=t)
-    
-    def get_pl(self, t: int):
-        return self.forecaster_connector.get_fixed_load(t=t)
-    
-    def get_ql(self, t: int):
-        return self.forecaster_connector.get_fixed_load(t=t) * self.pf
 
-    def get_da(self, t: int):
-        return self.forecaster_connector.get_da(t)
+    def get_wind(self):
+        w = 1
+        t = 24
+        data = {}
+        for i in range(1, w + 1):
+            data[i] = {}
+            for j in range(1, t + 1):
+                data[i][j] = self.forecaster_connector.get_wind(w=i, t=j)
+        return data
+
+    def get_pv(self):
+        w = 1
+        t = 24
+        data = {}
+        for i in range(1, w + 1):
+            data[i] = {}
+            for j in range(1, t + 1):
+                data[i][j] = self.forecaster_connector.get_pv(w=i, t=j)
+        return data
+
+    def get_pl(self):
+        t = 24
+        data = {}
+        for i in range(1, t + 1):
+            data[i] = self.forecaster_connector.get_fixed_load(t=i)
+        return data
+
+    def get_ql(self):
+        t = 24
+        data = {}
+        for i in range(1, t + 1):
+            data[i] = self.forecaster_connector.get_fixed_load(t=i) * self.pf
+        return data
+
+    def get_da(self):
+        t = 24
+        data = {}
+        for i in range(1, t + 1):
+            data[i] = self.forecaster_connector.get_da(t=i)
+        return data
+
+    def get(self, key: str):
+        if key == "lambda_DA":
+            return self.get_da()
+        if key == "rho":
+            return {1: 1}
+
 
 class ForecasterAPI:
 
@@ -40,8 +75,8 @@ class ForecasterAPI:
                 'da': uncertainty_params.da_price,
                 'rt': uncertainty_params.rt_price
             }
-        
-        raise(IndexError(f"No results for time={t}"))
+
+        raise (IndexError(f"No results for time={t}"))
 
     def get_fixed_load(self, t: int):
         res = res = requests.get(self.endpoint + "/node-fixed-load/" + str(
@@ -49,23 +84,23 @@ class ForecasterAPI:
         data = res['data']
         if res['status'] != 404:
             return data['load']
-        
-        raise(IndexError(f"No results for time={t}"))
-    
+
+        raise (IndexError(f"No results for time={t}"))
+
     def get_flexible_load(self, w: int, t: int):
         res = res = requests.get(self.endpoint + "/node-flexible-load/" + str(
             self.node_id) + f"?time={t}").json()
         data = res['data']
         if res['status'] != 404:
             return data['load']
-        
-        raise(IndexError(f"No results for time={t}"))
-    
+
+        raise (IndexError(f"No results for time={t}"))
+
     def get_wind(self, w: int, t: int):
         return self.__get_uncertainty_params(w=w, t=t)['wind']
-    
+
     def get_pv(self, w: int, t: int):
         return self.__get_uncertainty_params(w=w, t=t)['pv']
-    
+
     def get_da(self, t: int):
         return self.__get_uncertainty_params(w=-1, t=t)['da']

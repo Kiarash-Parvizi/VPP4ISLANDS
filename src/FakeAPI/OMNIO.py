@@ -7,7 +7,7 @@ class OMNIOAPI:
         self.endpoint = "http://localhost:8001"
         self.node_id = node_id
     
-    def get_resources_data(self) -> None:
+    def get_resources_data(self) -> dict:
         res = requests.get(self.endpoint + "/node-resources/" + str(
             self.node_id)).json()
         data = res['data']

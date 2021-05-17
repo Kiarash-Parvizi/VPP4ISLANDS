@@ -52,7 +52,7 @@ class WF (Resource):
         raise(KeyError("there is no such key for WF"))
     
     def get(self, key: str):
-        # Wind farm Power gereration
+        # Wind farm Power generator
         if key == "P_Wind":
             return Forecaster(self.node_id).get_wind()
         

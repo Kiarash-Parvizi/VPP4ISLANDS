@@ -1,7 +1,8 @@
 from .Resource import Resource
+from src.vppNode.Mapper import Mapper
 
 
-class FL (Resource):
+class FL(Resource):
     """Flexible Load class from Resources
     Attributes:
     node_id     (int)  : node_id of bus where FlexibleLoads is installed
@@ -65,11 +66,11 @@ class FL (Resource):
 
     def to_dict(self) -> dict:
         return self.__dict__
-    
+
     @staticmethod
     def create_from_dict(_dict: dict):
         return FL(**_dict)
-    
+
     def set(self, key: str, value, w: int, t: int):
         sp_key = key.split("_")
         key = "_".join(sp_key[2: len(sp_key) - 3])
@@ -85,7 +86,7 @@ class FL (Resource):
                 self.sp_q_flex[w] = {}
             self.sp_q_flex[w][t] = value
         else:
-            raise(KeyError("there is no such key for FL"))
+            raise (KeyError("there is no such key for FL"))
 
     def get(self, key: str):
         # Incentive payment to flexible loads
@@ -101,4 +102,67 @@ class FL (Resource):
         if key == "LR_drop":
             return self.lr_drop
 
-        raise(KeyError("there is no such key for FL"))
+        raise (KeyError("there is no such key for FL"))
+
+
+class FLCollection:
+    """ Collection class for Flexible Loads
+    """
+
+    def __init__(self):
+        self.resources = Mapper[FL]()
+        # setpoints
+        self.sp_p_flex = {}
+        self.sp_q_flex = {}
+
+    def __get_lr_pickup_sum(self):
+        print(self.resources.mp.keys)
+
+    def set(self, key: str, value, w: int, t: int):
+        sp_key = key.split("_")
+        key = "_".join(sp_key[2: len(sp_key) - 3])
+
+        # active scheduled power of flexible load
+        if key == "P_S_flex":
+            if w not in self.sp_p_flex:
+                self.sp_p_flex[w] = {}
+            self.sp_p_flex[w][t] = value
+        # reactive scheduled power of flexible load
+        elif key == "Q_S_flex":
+            if w not in self.sp_q_flex:
+                self.sp_q_flex[w] = {}
+            self.sp_q_flex[w][t] = value
+        else:
+            raise (KeyError("there is no such key for FL"))
+
+    def get(self, key: str):
+        # Incentive payment to flexible loads
+        if key == "INC_S":
+            _inc = 0
+            _len = len(self.resources.mp.getItems())
+            for item in self.resources.mp.getItems():
+                _inc += item.get(key)
+            return _inc * 1. / _len
+        # Flexibility portion of loads
+        if key == "alpha_S_flex":
+            _alpha_flex = 0
+            _len = len(self.resources.mp.getItems())
+            for item in self.resources.mp.getItems():
+                _alpha_flex += item.get(key)
+            return _alpha_flex * 1. / _len
+        # Load pick-up rates
+        if key == "LR_S_pickup":
+            _lr_pickup = 0
+            _len = len(self.resources.mp.getItems())
+            for item in self.resources.mp.getItems():
+                _lr_pickup += item.get(key)
+            return _lr_pickup * 1. / _len
+        # Load drop rates
+        if key == "LR_S_drop":
+            _lr_drop = 0
+            _len = len(self.resources.mp.getItems())
+            for item in self.resources.mp.getItems():
+                _lr_drop += item.get(key)
+            return _lr_drop * 1. / _len
+
+        raise (KeyError("there is no such key for FL"))
