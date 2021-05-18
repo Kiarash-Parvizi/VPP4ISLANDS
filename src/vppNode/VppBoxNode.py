@@ -30,7 +30,7 @@ class VppBoxNode(Junction):
         self.dg_resources = Mapper[DG]()
         self.es_resources = Mapper[ES]()
         # self.fl_resources = Mapper[FL]()
-        self.fl_collections = FLCollection()
+        self.fl_collection = FLCollection()
         self.pv_resources = Mapper[PV]()
         self.wf_resources = Mapper[WF]()
         self.fixed_load = FixedLoad(self.node_id)
@@ -80,7 +80,7 @@ class VppBoxNode(Junction):
             if dt['type'] == 'DG':
                 self.__update_resource_by_dic("DG", DG, self.dg_resources, dt)
             if dt['type'] == 'FL':
-                self.__update_resource_by_dic("FL", FL, self.fl_collections.resources, dt)
+                self.__update_resource_by_dic("FL", FL, self.fl_collection.resources, dt)
 
     def to_dict(self) -> dict:
         obj = {}
