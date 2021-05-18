@@ -17,17 +17,21 @@ class VppNode:
         self.edgeMp = Mapper[Edge]()
         self.junctionMp = Mapper[Junction]()
 
+    # adds a new junction to the graph
+    # pure instances of junction class are not allowed 
     def add_junction(self, junction: Junction) -> int:
         id = self.junctionMp.add(junction)
         return id
 
+    # adds a new undirected-edge to the graph
     def add_edge(self, junctionIds: Tuple[int,int]) -> int:
-        edge = Edge(junctionIds, LineProps(100, 1, 1, 1))
+        edge = Edge(junctionIds, LineProps(100, 1, 1, 1, 0))
         id = self.edgeMp.add(edge)
         self.junctionMp.get(junctionIds[0]).add_edge(id)
         self.junctionMp.get(junctionIds[1]).add_edge(id)
         return id
 
+    # removes a junction with the specified id
     def rem_junction(self, id: int) -> bool:
         junction = self.junctionMp.get(id)
         if self.junctionMp.rem(id):
@@ -40,6 +44,7 @@ class VppNode:
             return True
         return False
 
+    # removes an edge with the specified id
     def rem_edge(self, id) -> bool:
         edge = self.edgeMp.get(id)
         if self.edgeMp.rem(id):
@@ -50,6 +55,7 @@ class VppNode:
             return True
         return False
     
+    # clears the graph (removes all nodes and edges)
     def clear(self) -> None:
         jLs = []
         for jId, _ in self.junctionMp.getItems():
@@ -57,7 +63,7 @@ class VppNode:
         for jId in jLs:
             self.rem_junction(jId)
 
-    # returns the edgeId that connects nodeIds
+    # returns the edgeId that connects two nodeIds
     def get_edgeId(self, nodeIds: Tuple[int,int]) -> int:
         nd0 = self.junctionMp.get(nodeIds[0])
         nd1 = self.junctionMp.get(nodeIds[1])
