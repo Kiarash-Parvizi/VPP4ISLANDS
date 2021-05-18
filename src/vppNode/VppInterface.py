@@ -11,9 +11,10 @@ class VppInterface:
         # set other modules later
         self.vppNode = vppNode
 
+    # solver parameters
     def get_optimizer_input_data(self):
         dat = {
-            # TODO: P_PV(pv,w,t) P_Wind(wf,w,t) P/Q_L(j,t)
+            # TODO: P_PV(i0,pv,w,t) P_Wind(i0,wf,w,t) P/Q_S_L(i0,j,t)
             'eta_ES_Ch': {
                 1
             },
@@ -29,10 +30,55 @@ class VppInterface:
                 t: 'get from somewhere else'
                 for t in range(1)
             },
+            'SUC_DG': {},
+            'SDC_DG': {},
+            'C_DG': {},
+            'P_DG_min': {},
+            'P_DG_max': {},
+            'Q_DG_min': {},
+            'Q_DG_max': {},
+            'RU_DG': {},
+            'RD_DG': {},
+            'MUT': {},
+            'MDT': {},
+            'P_ChES_max': {},
+            'P_DchES_max': {},
+            'SOE_ES_min': {},
+            'SOE_ES_max': {},
+            'INC_S': {},
+            'alpha_S_flex': {},
+            'LR_S_pickup': {},
+            'LR_S_drop': {},
         }
         gridNodes, vppBoxNodes = self.getGridNodes(), self.getVppBoxNodes()
         edgeIds = self.getEdgeIds()
         for i0, box in vppBoxNodes:
+            dat['SUC_DG'][i0] = {},
+            dat['SDC_DG'][i0] = {},
+            dat['C_DG'][i0] = {},
+            dat['P_DG_min'][i0] = {},
+            dat['P_DG_max'][i0] = {},
+            dat['Q_DG_min'][i0] = {},
+            dat['Q_DG_max'][i0] = {},
+            dat['RU_DG'][i0] = {},
+            dat['RD_DG'][i0] = {},
+            dat['MUT'][i0] = {},
+            dat['MDT'][i0] = {},
+            dat['P_ChES_max'][i0] = {}, 
+            dat['P_DchES_max'][i0]= {},
+            dat['SOE_ES_min'][i0] = {},
+            dat['SOE_ES_max'][i0] = {},
+            dat['INC_S'][i0] = {},
+            dat['alpha_S_flex'][i0] = {},
+            dat['LR_S_pickup'][i0]  = {},
+            dat['LR_S_drop'][i0] = {},
+            # flex container data
+            fl_container = box.fl_collection
+            dat['INC_S'][i0] = fl_container.get('INC_S')
+            dat['alpha_S_flex'][i0] = fl_container.get('alpha_S_flex')
+            dat['LR_S_pickup'][i0] = fl_container.get('LR_S_pickup')
+            dat['LR_S_drop'][i0] = fl_container.get('LR_S_drop')
+            #
             for i1, dg in box.dg_resources.getItems():
                 dat['SUC_DG'][i0][i1] = dg.get('SUC_DG')
                 dat['SDC_DG'][i0][i1] = dg.get('SDC_DG')
@@ -45,17 +91,12 @@ class VppInterface:
                 dat['RD_DG'][i0][i1] = dg.get('RD_DG')
                 dat['MUT'][i0][i1] = dg.get('MUT')
                 dat['MDT'][i0][i1] = dg.get('MDT')
-                # P/G_L
+                # P/Q_S_L
             for i1, es in box.es_resources.getItems():
                 dat['P_ChES_max'][i0][i1] = es.get('P_ChES_max')
                 dat['P_DchES_max'][i0][i1] = es.get('P_DchES_max')
                 dat['SOE_ES_min'][i0][i1] = es.get('SOE_ES_min')
                 dat['SOE_ES_max'][i0][i1] = es.get('SOE_ES_max')
-            for i1, fl in box.fl_resources.getItems():
-                dat['INC'][i0][i1] = fl.get('INC')
-                dat['alpha_flex'][i0][i1] = fl.get('alpha_flex')
-                dat['LR_pickup'][i0][i1] = fl.get('LR_pickup')
-                dat['LR_drop'][i0][i1] = fl.get('LR_drop')
             for i1, pv in box.pv_resources.getItems():
                 #dat['-wt']['P_PV'][i0][i1] = dg.get('P_PV')
                 pass
@@ -132,8 +173,8 @@ class VppInterface:
                 Q_DG    = L0['Q']['DG']
                 P_ChES  = L0['P']['ChES']
                 P_DchES = L0['P']['DchES']
-                P_flex  = L0['P']['flex']
-                Q_flex  = L0['Q']['flex']
+                P_S_flex= L0['P']['S']['flex']
+                Q_S_flex= L0['Q']['S']['flex']
                 P_plus  = L0['P']['+']
                 P_minus = L0['P']['-']
                 P_delta = L0['P']['delta']
@@ -160,10 +201,8 @@ class VppInterface:
                             setF(obj, w, t, P_DchES[nId][i])
                             setF(obj, w, t, SOE_ES[nId][i])
                     # fl
-                    if nd.fl_resources.len() > 0:
-                        for i, obj in nd.fl_resources.getItems():
-                            setF(obj, w, t, P_flex[nId][i])
-                            setF(obj, w, t, Q_flex[nId][i])
+                    setF(obj, w, t, P_S_flex[nId])
+                    setF(obj, w, t, Q_S_flex[nId])
                     # directed edges
                     adj_nodes = self.getAdjNodeIds(nId, VppBoxNode)
                     if len(adj_nodes) != 0:
