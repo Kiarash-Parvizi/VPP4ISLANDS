@@ -26,6 +26,7 @@ class Optimizer:
         # var map
         self.var = {
             # format: w,t,['type'..],i
+            # var[w][t]['P']['DA']['buy'][i0][i1] = data
             w: {
                 t: {
                     'P': {
@@ -36,7 +37,9 @@ class Optimizer:
                         'DG': {},
                         'ChES' : {}, 
                         'DchES': {},
-                        'flex': {},
+                        'S': {
+                            'flex': {},
+                        },
                         '+': {},
                         '-': {},
                         'delta': {},
@@ -47,7 +50,9 @@ class Optimizer:
                             'sell': {},
                         },
                         'DG': {},
-                        'flex': {},
+                        'S': {
+                            'flex': {},
+                        },
                         '+': {},
                         '-': {},
                         'delta': {},
@@ -62,7 +67,7 @@ class Optimizer:
                         'DG': {},
                     },
                     'SOE': {
-                        'ES': {}
+                        'ES': {},
                     },
                     'S': {
                         'delta': {},
@@ -94,8 +99,8 @@ class Optimizer:
                 Q_DG    = L0['Q']['DG']
                 P_ChES  = L0['P']['ChES']
                 P_DchES = L0['P']['DchES']
-                P_flex  = L0['P']['flex']
-                Q_flex  = L0['Q']['flex']
+                P_S_flex  = L0['P']['S']['flex']
+                Q_S_flex  = L0['Q']['S']['flex']
                 P_plus  = L0['P']['+']
                 P_minus = L0['P']['-']
                 P_delta = L0['P']['delta']
@@ -137,15 +142,11 @@ class Optimizer:
                                     name='%x_%x_P_DchES_%x_%x'%(w,t,nId,i))
                             SOE_ES[nId][i] = self.model.addVar(vtype= GRB.REAL,
                                 name='%x_%x_SOE_ES_%x_%x'%(w,t,nId,i))
-                    # fl
-                    if nd.fl_resources.len() > 0:
-                        P_flex[nId] = {}
-                        Q_flex[nId] = {}
-                        for i, _ in nd.fl_resources.getItems():
-                            P_flex[nId][i] = self.model.addVar(vtype= GRB.REAL,
-                                name='%x_%x_P_flex_%x_%x'%(w,t,nId,i))
-                            Q_flex[nId][i] = self.model.addVar(vtype= GRB.REAL,
-                                name='%x_%x_Q_flex_%x_%x'%(w,t,nId,i))
+                    # flex
+                    P_S_flex[nId] = self.model.addVar(vtype= GRB.REAL,
+                        name='%x_%x_P_S_flex_%x'%(w,t,nId))
+                    Q_S_flex[nId] = self.model.addVar(vtype= GRB.REAL,
+                        name='%x_%x_Q_S_flex_%x'%(w,t,nId))
                     # directed edges
                     adj_nodes = self.vppInterface.getAdjNodeIds(nId, VppBoxNode)
                     if len(adj_nodes) != 0:
@@ -205,10 +206,8 @@ class Optimizer:
                     #for i1, _ in nd.es_resources.getItems():
                     #    pass
                     pass
-                # fl
-                if nd.fl_resources.len() > 0:
-                    for i1, _ in nd.fl_resources.getItems():
-                        MF1 += dat['INC'][i0][i1] * var[1][t]['P']['flex'][i1]
+                # flex
+                MF1 += dat['INC_S'][i0] * var[1][t]['P']['S']['flex'][i0]
         #
         ls: List[Tuple[float, Any]] = [
             (PMF1, MF1)
@@ -235,8 +234,8 @@ class Optimizer:
                 for nId, _ in gridNodes:
                     L0 = vi['P']['DA']
                     L1 = vi['Q']['DA']
-                    self.model.addConstr(L0['buy']-L0['sell']==0, "c_sest_2_%i_%i_%i"%(w,t,nId))
-                    self.model.addConstr(L1['buy']-L1['sell']==0, "c_sest_3_%i_%i_%i"%(w,t,nId))
+                    self.model.addConstr(L0['buy']-L0['sell']==0, "c_sest_2_%x_%x_%x"%(w,t,nId))
+                    self.model.addConstr(L1['buy']-L1['sell']==0, "c_sest_3_%x_%x_%x"%(w,t,nId))
                 for i0, nd in vppBoxNodes:
                     expr_sest_2_2, expr_sest_3_2 = gp.LinExpr(), gp.LinExpr()
                     # dg
@@ -244,13 +243,14 @@ class Optimizer:
                         for i1, _ in nd.dg_resources.getItems():
                             expr_sest_2_2 += vi['P']['DG'][i1]
                             expr_sest_3_2 += vi['Q']['DG'][i1]
+                            # l = NW * NT * len(dg)
                             self.model.addConstr(
                                 dat['P_DG_min'][i0][i1] *
                                 vi['U']['DG'][i1] <=
                                 vi['P']['DG'][i1] <=
                                 dat['P_DG_max'][i0][i1] *
                                 vi['U']['DG'][i1],
-                                'c_sest_4_%i_%i_%i_%i'%(w,t,i0,i1)
+                                'c_sest_4_%x_%x_%x_%x'%(w,t,i0,i1)
                             )
                             self.model.addConstr(
                                 dat['Q_DG_min'][i0][i1] *
@@ -258,7 +258,7 @@ class Optimizer:
                                 vi['Q']['DG'][i1] <=
                                 dat['Q_DG_max'][i0][i1] *
                                 vi['U']['DG'][i1],
-                                'c_sest_5_%i_%i_%i_%i'%(w,t,i0,i1)
+                                'c_sest_5_%x_%x_%x_%x'%(w,t,i0,i1)
                             )
                     # es
                     if nd.pv_resources.len() > 0:
@@ -284,8 +284,8 @@ class Optimizer:
                         for bp in adj_nodes:
                             expr_sest_2_2 += vi['P']['+'][bp][i0] - vi['P']['-'][bp][i0]
                             expr_sest_3_2 += vi['Q']['+'][bp][i0] - vi['Q']['-'][bp][i0]
-                    self.model.addConstr(expr_sest_2_2==0, "c_sest_2_2_%i_%i_%i"%(w,t,i0))
-                    self.model.addConstr(expr_sest_3_2==0, "c_sest_3_2_%i_%i_%i"%(w,t,i0))
+                    self.model.addConstr(expr_sest_2_2==0, "c_sest_2_2_%x_%x_%x"%(w,t,i0))
+                    self.model.addConstr(expr_sest_3_2==0, "c_sest_3_2_%x_%x_%x"%(w,t,i0))
         pass
     
     def set_equations(self):
