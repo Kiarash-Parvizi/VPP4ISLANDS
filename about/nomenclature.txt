@@ -1,3 +1,4 @@
+Sest2 pdf:
 vars:
 P_DA_buy
 P_DA_sell
@@ -13,11 +14,7 @@ P_DchES
 SOE_ES
 P_S_flex
 Q_S_flex
-
-P_delta
-Q_delta
-S_delta
-
+--
 parameters:
 SUC_DG
 SDC_DG
@@ -45,3 +42,22 @@ P_DchES_max
 eta_ES
 SOE_ES_min
 SOE_ES_max
+
+Formulation pdf:
+parameters:
+V_Rated (Sb)
+V_min (b)
+V_max (b)
+X (dEdge)
+R (dEdge)
+I (dEdge)
+Z (dEdge)
+I_max
+--
+vars:
+V (b)
+--
+auxiliary vars:
+S_delta (!m)
+P_delta
+Q_delta
