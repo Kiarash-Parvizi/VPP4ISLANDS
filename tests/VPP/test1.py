@@ -9,7 +9,7 @@ NNodes = 15
 
 vppNode = VppNode()
 
-nodes: Dict[int, Junction] = {
+nodes: Dict[int, VppBoxNode] = {
                                 # GridNode
                                 1: VppBoxNode(node_id=1, trade_compatible=True),
                                 # BoxNodes

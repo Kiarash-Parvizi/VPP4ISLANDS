@@ -5,12 +5,13 @@ import socket
 from ..PowerResources.DG import DG
 from ..PowerResources.ES import ES
 from ..PowerResources.PV import PV
-from ..PowerResources.FL import FL, FLCollection
+from ..PowerResources.FL import FL
 from ..PowerResources.WF import WF
 from src.PowerResources.FixedLoad import FixedLoad
 from ..PowerResources.Resource import Resource
 from typing import Type, Set
 from src.FakeAPI.OMNIO import OMNIOAPI
+from src.PowerResources.LoadCollection import LoadColleciton
 
 
 class VppBoxNode(Junction):
@@ -30,10 +31,11 @@ class VppBoxNode(Junction):
 
         self.dg_resources = Mapper[DG]()
         self.es_resources = Mapper[ES]()
-        self.fl_collection = FLCollection()
         self.pv_resources = Mapper[PV]()
         self.wf_resources = Mapper[WF]()
-        self.fixed_load = FixedLoad(self.node_id)
+
+        self.load_collection = LoadColleciton()
+        self.load_collection.fixed_loads.add(FixedLoad(self.node_id))
 
         # params
         self.v_min = v_min
@@ -123,7 +125,7 @@ class VppBoxNode(Junction):
             if dt['type'] == 'DG':
                 self.__update_resource_by_dic("DG", DG, self.dg_resources, dt)
             if dt['type'] == 'FL':
-                self.__update_resource_by_dic("FL", FL, self.fl_collection.resources, dt)
+                self.__update_resource_by_dic("FL", FL, self.load_collection.flex_loads, dt)
 
     def to_dict(self) -> dict:
         obj = {}
