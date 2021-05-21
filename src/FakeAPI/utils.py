@@ -136,7 +136,7 @@ def create_line_data():
     }
 
 def read_uncertainty_params(time):
-    df = pd.read_csv('../../data/uncertainty_parameters.csv')
+    df = pd.read_csv('data/uncertainty_parameters.csv')
     try:
         item = df["t" + str(time)]
     except:
@@ -156,7 +156,7 @@ def read_uncertainty_params(time):
     }
 
 def read_fixed_load_data(time):
-    df = pd.read_csv('../../data/fixed_loads.csv')
+    df = pd.read_csv('data/fixed_loads.csv')
 
     try:
         item = df['t' + str(time)]
@@ -179,7 +179,7 @@ def read_fixed_load_data(time):
     }
 
 def read_flexibe_load_data(time):
-    df = pd.read_csv('../../data/flexible_loads.csv')
+    df = pd.read_csv('data/flexible_loads.csv')
 
     try:
         item = df['t' + str(time)]
@@ -202,7 +202,7 @@ def read_flexibe_load_data(time):
     }
 
 def read_dg_data():
-    df = pd.read_csv('../../data/DG_source.csv')
+    df = pd.read_csv('data/DG_source.csv')
     
     cols = df.columns
 
@@ -224,7 +224,7 @@ def read_dg_data():
     }
 
 def read_es_data():
-    df = pd.read_csv('../../data/ES_source.csv')
+    df = pd.read_csv('data/ES_source.csv')
     
     cols = df.columns
 
@@ -246,7 +246,7 @@ def read_es_data():
     }
 
 def read_fl_data():
-    df = pd.read_csv('../../data/FL_source.csv')
+    df = pd.read_csv('data/FL_source.csv')
     
     cols = df.columns
 
@@ -268,7 +268,7 @@ def read_fl_data():
     }
 
 def read_pv_data():
-    df = pd.read_csv('../../data/PV_source.csv')
+    df = pd.read_csv('data/PV_source.csv')
     
     cols = df.columns
 
@@ -290,7 +290,7 @@ def read_pv_data():
     }
 
 def read_wf_data():
-    df = pd.read_csv('../../data/WF_source.csv')
+    df = pd.read_csv('data/WF_source.csv')
     
     cols = df.columns
 
