@@ -119,15 +119,15 @@ class ES(Resource):
             return self.p_max_discharge
         # Charge efficiency of energy storages
         if key == "eta_ChES":
-            return self.efficiency_charge
+            return self.efficiency_charge / 100.
         # Discharge efficiency of energy storages
         if key == "eta_DchES":
-            return self.efficiency_discharge
+            return self.efficiency_discharge / 100.
         # Minimum state of energy level of energy storages
         if key == "SOE_ES_min":
-            return self.soe_min
+            return self.soe_min / 100.
         # Maximum state of energy level of energy storages
         if key == "SOE_ES_max":
-            return self.soe_max
+            return self.soe_max / 100.
         raise(KeyError("there is no such key in ES"))
        
