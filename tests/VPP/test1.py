@@ -26,7 +26,7 @@ for _, node in nodes.items():
     if isinstance(node, VppBoxNode):
         node.load_resources_from_api()
 
-j_ids = {_id: vppNode.add_junction(item) for _id, item in nodes.items()}
+j_ids = {_id: vppNode.add_junction_by_id(_id, item) for _id, item in nodes.items()}
 
 connections = [
     {
@@ -102,6 +102,6 @@ connections = [
 
 connections_history = {}
 for connection in connections:
-    _id = vppNode.add_edge_by_line(connection['nodes'], connection['line'])
+    _id = vppNode.add_edge(connection['nodes'], connection['line'])
     connections_history[_id] = connection
 
