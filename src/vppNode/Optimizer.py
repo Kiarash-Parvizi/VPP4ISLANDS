@@ -1,4 +1,3 @@
-from .GridNode import GridNode
 from .VppBoxNode import VppBoxNode
 from .VppInterface import VppInterface
 from typing import Tuple, List, Any
@@ -22,7 +21,6 @@ class Optimizer:
         # tmp vars
         NW, NT, NM = self.NW, self.NT, self.NM
         vppBoxNodes = self.vppInterface.getVppBoxNodes()
-        gridNodes   = self.vppInterface.getGridNodes()
         # var map
         self.var = {
             # format: w,t,['type'..],i
@@ -82,18 +80,9 @@ class Optimizer:
         for w in range(1, NW+1):
             for t in range(1, NT+1):
                 L0 = self.var[w][t]
-                # over gridNodes:
+                # over tradeNodes:
                 P_DA = L0['P']['DA']
                 Q_DA = L0['Q']['DA']
-                for nId, _ in gridNodes:
-                    P_DA['buy'][nId] = self.model.addVar(vtype= GRB.REAL,
-                        name='%x_%x_P_DA_buy_%x'%(w,t,nId))
-                    P_DA['sell'][nId] = self.model.addVar(vtype= GRB.REAL,
-                        name='%x_%x_P_DA_sell_%x'%(w,t,nId))
-                    Q_DA['buy'][nId] = self.model.addVar(vtype= GRB.REAL,
-                        name='%x_%x_Q_DA_buy_%x'%(w,t,nId))
-                    Q_DA['sell'][nId] = self.model.addVar(vtype= GRB.REAL,
-                        name='%x_%x_Q_DA_sell_%x'%(w,t,nId))
                 # over vppBoxNodes:
                 P_DG    = L0['P']['DG']
                 Q_DG    = L0['Q']['DG']
@@ -104,14 +93,55 @@ class Optimizer:
                 P_plus  = L0['P']['+']
                 P_minus = L0['P']['-']
                 P_delta = L0['P']['delta']
-                Q_plus  = L0['P']['+']
-                Q_minus = L0['P']['-']
+                Q_plus  = L0['Q']['+']
+                Q_minus = L0['Q']['-']
                 Q_delta = L0['Q']['delta']
                 S_delta = L0['S']['delta']
                 v_DG    = L0['v']['DG']
                 U_DG    = L0['U']['DG']
                 SOE_ES  = L0['SOE']['ES']
                 for nId, nd in vppBoxNodes:
+                    # directed edges
+                    adj_nodes = self.vppInterface.getAdjNodeIds(nId, VppBoxNode)
+                    if len(adj_nodes) != 0:
+                        P_plus[nId] = {}
+                        Q_plus[nId] = {}
+                        P_minus[nId] = {}
+                        Q_minus[nId] = {}
+                        P_delta[nId] = {}
+                        Q_delta[nId] = {}
+                        S_delta[nId] = {}
+                        for nId_p in adj_nodes:
+                            P_delta[nId][nId_p] = {}
+                            Q_delta[nId][nId_p] = {}
+                            #
+                            P_plus[nId][nId_p] = self.model.addVar(vtype= GRB.CONTINUOUS,
+                                    name='%x_%x_P_+_%x_%x'%(w,t,nId,nId_p))
+                            P_minus[nId][nId_p] = self.model.addVar(vtype= GRB.CONTINUOUS,
+                                    name='%x_%x_P_-_%x_%x'%(w,t,nId,nId_p))
+                            Q_plus[nId][nId_p] = self.model.addVar(vtype= GRB.CONTINUOUS,
+                                    name='%x_%x_Q_+_%x_%x'%(w,t,nId,nId_p))
+                            Q_minus[nId][nId_p] = self.model.addVar(vtype= GRB.CONTINUOUS,
+                                    name='%x_%x_Q_-_%x_%x'%(w,t,nId,nId_p))
+                            # m:
+                            for m in range(1, NM+1):
+                                P_delta[nId][nId_p][m] = self.model.addVar(vtype= GRB.CONTINUOUS,
+                                    name='%x_%x_P_delta_%x_%x_%x'%(w,t,nId,nId_p,m))
+                                Q_delta[nId][nId_p][m] = self.model.addVar(vtype= GRB.CONTINUOUS,
+                                    name='%x_%x_Q_delta_%x_%x_%x'%(w,t,nId,nId_p,m))
+                                S_delta[nId][nId_p] = self.model.addVar(vtype= GRB.CONTINUOUS,
+                                    name='%x_%x_S_delta_%x_%x'%(w,t,nId,nId_p))
+                    # tradeNodes
+                    if nd.trade_compatible:
+                        P_DA['buy'][nId] = self.model.addVar(vtype= GRB.CONTINUOUS,
+                            name='%x_%x_P_DA_buy_%x'%(w,t,nId))
+                        P_DA['sell'][nId] = self.model.addVar(vtype= GRB.CONTINUOUS,
+                            name='%x_%x_P_DA_sell_%x'%(w,t,nId))
+                        Q_DA['buy'][nId] = self.model.addVar(vtype= GRB.CONTINUOUS,
+                            name='%x_%x_Q_DA_buy_%x'%(w,t,nId))
+                        Q_DA['sell'][nId] = self.model.addVar(vtype= GRB.CONTINUOUS,
+                            name='%x_%x_Q_DA_sell_%x'%(w,t,nId))
+                        continue
                     # dg
                     if nd.dg_resources.len() > 0:
                         P_DG[nId] = {}
@@ -120,15 +150,15 @@ class Optimizer:
                         v_DG['SD'][nId] = {}
                         U_DG[nId] = {}
                         for i, _ in nd.dg_resources.getItems():
-                            P_DG[nId][i] = self.model.addVar(vtype= GRB.REAL,
+                            P_DG[nId][i] = self.model.addVar(vtype= GRB.CONTINUOUS,
                                 name='%x_%x_P_DG_%x_%x'%(w,t,nId,i))
-                            Q_DG[nId][i] = self.model.addVar(vtype= GRB.REAL,
+                            Q_DG[nId][i] = self.model.addVar(vtype= GRB.CONTINUOUS,
                                 name='%x_%x_Q_DG_%x_%x'%(w,t,nId,i))
-                            v_DG['SU'][nId][i] = self.model.addVar(vtype= GRB.REAL,
+                            v_DG['SU'][nId][i] = self.model.addVar(vtype= GRB.CONTINUOUS,
                                 name='%x_%x_v_DG_SU_%x_%x'%(w,t,nId,i))
-                            v_DG['SD'][nId][i] = self.model.addVar(vtype= GRB.REAL,
+                            v_DG['SD'][nId][i] = self.model.addVar(vtype= GRB.CONTINUOUS,
                                 name='%x_%x_v_DG_SD_%x_%x'%(w,t,nId,i))
-                            U_DG[nId][i] = self.model.addVar(vtype= GRB.REAL,
+                            U_DG[nId][i] = self.model.addVar(vtype= GRB.CONTINUOUS,
                                     name='%x_%x_U_DG_%x_%x'%(w,t,nId,i))
                     # es
                     if nd.es_resources.len() > 0:
@@ -136,45 +166,17 @@ class Optimizer:
                         P_DchES[nId] = {}
                         SOE_ES[nId] = {}
                         for i, _ in nd.es_resources.getItems():
-                            P_ChES[nId][i] = self.model.addVar(vtype= GRB.REAL,
+                            P_ChES[nId][i] = self.model.addVar(vtype= GRB.CONTINUOUS,
                                     name='%x_%x_P_ChES_%x_%x'%(w,t,nId,i))
-                            P_DchES[nId][i] = self.model.addVar(vtype= GRB.REAL,
+                            P_DchES[nId][i] = self.model.addVar(vtype= GRB.CONTINUOUS,
                                     name='%x_%x_P_DchES_%x_%x'%(w,t,nId,i))
-                            SOE_ES[nId][i] = self.model.addVar(vtype= GRB.REAL,
+                            SOE_ES[nId][i] = self.model.addVar(vtype= GRB.CONTINUOUS,
                                 name='%x_%x_SOE_ES_%x_%x'%(w,t,nId,i))
-                    # flex
-                    P_S_flex[nId] = self.model.addVar(vtype= GRB.REAL,
+                    # load
+                    P_S_flex[nId] = self.model.addVar(vtype= GRB.CONTINUOUS,
                         name='%x_%x_P_S_flex_%x'%(w,t,nId))
-                    Q_S_flex[nId] = self.model.addVar(vtype= GRB.REAL,
+                    Q_S_flex[nId] = self.model.addVar(vtype= GRB.CONTINUOUS,
                         name='%x_%x_Q_S_flex_%x'%(w,t,nId))
-                    # directed edges
-                    adj_nodes = self.vppInterface.getAdjNodeIds(nId, VppBoxNode)
-                    if len(adj_nodes) != 0:
-                        P_plus[nId] = {}
-                        Q_plus[nId] = {}
-                        P_delta[nId] = {}
-                        Q_delta[nId] = {}
-                        S_delta[nId] = {}
-                        for nId_p in adj_nodes:
-                            P_delta[nId][nId_p] = {}
-                            Q_delta[nId][nId_p] = {}
-                            #
-                            P_plus[nId][nId_p] = self.model.addVar(vtype= GRB.REAL,
-                                    name='%x_%x_P_+_%x_%x'%(w,t,nId,nId_p))
-                            P_minus[nId][nId_p] = self.model.addVar(vtype= GRB.REAL,
-                                    name='%x_%x_P_-_%x_%x'%(w,t,nId,nId_p))
-                            Q_plus[nId][nId_p] = self.model.addVar(vtype= GRB.REAL,
-                                    name='%x_%x_Q_+_%x_%x'%(w,t,nId,nId_p))
-                            Q_minus[nId][nId_p] = self.model.addVar(vtype= GRB.REAL,
-                                    name='%x_%x_Q_-_%x_%x'%(w,t,nId,nId_p))
-                            # m:
-                            for m in range(1, NM+1):
-                                P_delta[nId][nId_p][m] = self.model.addVar(vtype= GRB.REAL,
-                                    name='%x_%x_P_delta_%x_%x_%x'%(w,t,nId,nId_p,m))
-                                Q_delta[nId][nId_p][m] = self.model.addVar(vtype= GRB.REAL,
-                                    name='%x_%x_Q_delta_%x_%x_%x'%(w,t,nId,nId_p,m))
-                                S_delta[nId][nId_p] = self.model.addVar(vtype= GRB.REAL,
-                                    name='%x_%x_S_delta_%x_%x'%(w,t,nId,nId_p))
         #
 
     # uses the VppInterface to retrieve input values
@@ -185,29 +187,30 @@ class Optimizer:
         # tmp vars
         NW, NT, NM = self.NW, self.NT, self.NM
         vppBoxNodes = self.vppBoxNodes
-        gridNodes   = self.gridNodes
         dat, var = self.dat, self.var
         # Min Func 1:
         PMF1 = 1
         MF1 = gp.LinExpr()
         for t in range(1, NT+1):
-            for nId, _ in gridNodes:
-                L0 = var[1][t]['P']['DA']
-                MF1 += dat['lambda_DA'][t]*(L0['buy'][nId] - L0['sell'][nId])
             for i0, nd in vppBoxNodes:
+                # tradeNodes
+                if nd.trade_compatible:
+                    L0 = var[1][t]['P']['DA']
+                    MF1 += dat['lambda_DA'][t]*(L0['buy'][i0] - L0['sell'][i0])
+                    continue
                 # dg
                 if nd.dg_resources.len() > 0:
                     for i1, _ in nd.dg_resources.getItems():
-                        MF1 += dat['C_DG'][i0][i1] * var[1][t]['P']['DG'][i1]
-                        MF1 += dat['SUC_DG'][i0][i1] * var[1][t]['v']['DG']['SU'][i1]
-                        MF1 += dat['SDC_DG'][i0][i1] * var[1][t]['v']['DG']['SD'][i1]
+                        MF1 += dat['C_DG'][i0][i1] * var[1][t]['P']['DG'][i0][i1]
+                        MF1 += dat['SUC_DG'][i0][i1] * var[1][t]['v']['DG']['SU'][i0][i1]
+                        MF1 += dat['SDC_DG'][i0][i1] * var[1][t]['v']['DG']['SD'][i0][i1]
                 # es
                 if nd.es_resources.len() > 0:
                     #for i1, _ in nd.es_resources.getItems():
                     #    pass
                     pass
                 # flex
-                MF1 += dat['INC_S'][i0] * var[1][t]['P']['S']['flex'][i0]
+                MF1 += var[1][t]['P']['S']['flex'][i0] * dat['INC_S'][i0]
         #
         ls: List[Tuple[float, Any]] = [
             (PMF1, MF1)
@@ -224,60 +227,15 @@ class Optimizer:
         # tmp vars
         NW, NT, NM = self.NW, self.NT, self.NM
         vppBoxNodes = self.vppBoxNodes
-        gridNodes   = self.gridNodes
         dat, var = self.dat, self.var
         #
         # add new constraints
         for w in range(1, NW+1):
             for t in range(1, NT+1):
                 vi = var[w][t]
-                for nId, _ in gridNodes:
-                    L0 = vi['P']['DA']
-                    L1 = vi['Q']['DA']
-                    self.model.addConstr(L0['buy']-L0['sell']==0, "c_sest_2_%x_%x_%x"%(w,t,nId))
-                    self.model.addConstr(L1['buy']-L1['sell']==0, "c_sest_3_%x_%x_%x"%(w,t,nId))
                 for i0, nd in vppBoxNodes:
+                    # vars
                     expr_sest_2_2, expr_sest_3_2 = gp.LinExpr(), gp.LinExpr()
-                    # dg
-                    if nd.dg_resources.len() > 0:
-                        for i1, _ in nd.dg_resources.getItems():
-                            expr_sest_2_2 += vi['P']['DG'][i1]
-                            expr_sest_3_2 += vi['Q']['DG'][i1]
-                            # l = NW * NT * len(dg)
-                            self.model.addConstr(
-                                dat['P_DG_min'][i0][i1] *
-                                vi['U']['DG'][i1] <=
-                                vi['P']['DG'][i1] <=
-                                dat['P_DG_max'][i0][i1] *
-                                vi['U']['DG'][i1],
-                                'c_sest_4_%x_%x_%x_%x'%(w,t,i0,i1)
-                            )
-                            self.model.addConstr(
-                                dat['Q_DG_min'][i0][i1] *
-                                vi['U']['DG'][i1] <=
-                                vi['Q']['DG'][i1] <=
-                                dat['Q_DG_max'][i0][i1] *
-                                vi['U']['DG'][i1],
-                                'c_sest_5_%x_%x_%x_%x'%(w,t,i0,i1)
-                            )
-                    # es
-                    if nd.pv_resources.len() > 0:
-                        for i1, _ in nd.pv_resources.getItems():
-                            expr_sest_2_2 += dat['P_PV'][i0][i1][w][t]
-                    # es
-                    if nd.es_resources.len() > 0:
-                        for i1, _ in nd.es_resources.getItems():
-                            expr_sest_2_2 += vi['DchES'][i1] - vi['ChES'][i1]
-                            pass
-                    # wf
-                    if nd.wf_resources.len() > 0:
-                        for i1, _ in nd.wf_resources.getItems():
-                            expr_sest_2_2 += dat['P_Wind'][i0][i1][w][t]
-                            pass
-                    # fl
-                    if nd.fl_resources.len() > 0:
-                        for i1, _ in nd.fl_resources.getItems():
-                            pass
                     # directed edges
                     adj_nodes = self.vppInterface.getAdjNodeIds(i0, VppBoxNode)
                     if len(adj_nodes) != 0:
@@ -286,11 +244,62 @@ class Optimizer:
                             expr_sest_3_2 += vi['Q']['+'][bp][i0] - vi['Q']['-'][bp][i0]
                     self.model.addConstr(expr_sest_2_2==0, "c_sest_2_2_%x_%x_%x"%(w,t,i0))
                     self.model.addConstr(expr_sest_3_2==0, "c_sest_3_2_%x_%x_%x"%(w,t,i0))
+                    # tradeNodes
+                    if nd.trade_compatible:
+                        L0 = vi['P']['DA']
+                        L1 = vi['Q']['DA']
+                        self.model.addConstr(L0['buy'][i0]-L0['sell'][i0]==0, "c_sest_2_%x_%x_%x"%(w,t,i0))
+                        self.model.addConstr(L1['buy'][i0]-L1['sell'][i0]==0, "c_sest_3_%x_%x_%x"%(w,t,i0))
+                        continue
+                    # dg
+                    if nd.dg_resources.len() > 0:
+                        for i1, _ in nd.dg_resources.getItems():
+                            expr_sest_2_2 += vi['P']['DG'][i0][i1]
+                            expr_sest_3_2 += vi['Q']['DG'][i0][i1]
+                            # l = NW * NT * len(dg)
+                            self.model.addConstr(
+                                dat['P_DG_min'][i0][i1] *
+                                vi['U']['DG'][i0][i1] <=
+                                vi['P']['DG'][i0][i1],
+                                'c_sest_4_left_%x_%x_%x_%x'%(w,t,i0,i1)
+                            )
+                            self.model.addConstr(
+                                vi['P']['DG'][i0][i1] <=
+                                dat['P_DG_max'][i0][i1] *
+                                vi['U']['DG'][i0][i1],
+                                'c_sest_4_right_%x_%x_%x_%x'%(w,t,i0,i1)
+                            )
+                            self.model.addConstr(
+                                dat['Q_DG_min'][i0][i1] *
+                                vi['U']['DG'][i0][i1] <=
+                                vi['Q']['DG'][i0][i1],
+                                'c_sest_5_left_%x_%x_%x_%x'%(w,t,i0,i1)
+                            )
+                            self.model.addConstr(
+                                vi['Q']['DG'][i0][i1] <=
+                                dat['Q_DG_max'][i0][i1] *
+                                vi['U']['DG'][i0][i1],
+                                'c_sest_5_right_%x_%x_%x_%x'%(w,t,i0,i1)
+                            )
+                    # es
+                    if nd.pv_resources.len() > 0:
+                        for i1, _ in nd.pv_resources.getItems():
+                            expr_sest_2_2 += dat['P_PV'][i0][i1][w][t]
+                    # es
+                    if nd.es_resources.len() > 0:
+                        for i1, _ in nd.es_resources.getItems():
+                            expr_sest_2_2 += vi['P']['DchES'][i0][i1] - vi['P']['ChES'][i0][i1]
+                            pass
+                    # wf
+                    if nd.wf_resources.len() > 0:
+                        for i1, _ in nd.wf_resources.getItems():
+                            expr_sest_2_2 += dat['P_Wind'][i0][i1][w][t]
+                            pass
+                    # load
         pass
     
     def set_equations(self):
         self.vppBoxNodes = self.vppInterface.getVppBoxNodes()
-        self.gridNodes   = self.vppInterface.getGridNodes()
         # fetch data
         self.__fetch_data()
         # set equations
