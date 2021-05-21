@@ -139,29 +139,29 @@ class FLCollection:
         # Incentive payment to flexible loads
         if key == "INC_S":
             _inc = 0
-            _len = len(self.resources.mp.getItems())
-            for item in self.resources.mp.getItems():
+            _len = self.resources.len()
+            for item in self.resources.getItems():
                 _inc += item.get(key)
             return _inc * 1. / _len
         # Flexibility portion of loads
         if key == "alpha_S_flex":
             _alpha_flex = 0
-            _len = len(self.resources.mp.getItems())
-            for item in self.resources.mp.getItems():
+            _len = self.resources.len()
+            for item in self.resources.getItems():
                 _alpha_flex += item.get(key)
             return _alpha_flex * 1. / _len
         # Load pick-up rates
         if key == "LR_S_pickup":
             _lr_pickup = 0
-            _len = len(self.resources.mp.getItems())
-            for item in self.resources.mp.getItems():
+            _len = self.resources.len()
+            for item in self.resources.getItems():
                 _lr_pickup += item.get(key)
             return _lr_pickup * 1. / _len
         # Load drop rates
         if key == "LR_S_drop":
             _lr_drop = 0
-            _len = len(self.resources.mp.getItems())
-            for item in self.resources.mp.getItems():
+            _len = self.resources.len()
+            for item in self.resources.getItems():
                 _lr_drop += item.get(key)
             return _lr_drop * 1. / _len
 
