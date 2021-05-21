@@ -1,3 +1,4 @@
+from src.Forecaster.Forecaster import Forecaster
 from .GridNode import GridNode
 from .Junction import Junction
 from .VppBoxNode import VppBoxNode
@@ -13,23 +14,16 @@ class VppInterface:
 
     # solver parameters
     def get_optimizer_input_data(self):
+        forcaster = Forecaster()
         dat = {
-            # TODO: P_PV(i0,pv,w,t) P_Wind(i0,wf,w,t) P/Q_S_L(i0,j,t)
-            'eta_ES_Ch': {
-                1
-            },
-            'eta_ES_Dch': {
-                2
-            },
-            'rho': {
-                {1}
-                #w: 'get from somewhere else'
-                #for w in range(1)
-            },
-            'lambda_DA': {
-                t: 'get from somewhere else'
-                for t in range(1)
-            },
+            'P_S_L': {},
+            'Q_S_L': {},
+            'P_PV': {},
+            'P_Wind': {},
+            'eta_ES_Ch': { 0.85 },
+            'eta_ES_Dch': { 0.85 },
+            'rho': forcaster.get('rho'),
+            'lambda_DA': forcaster.get('lambda_DA'),
             'SUC_DG': {},
             'SDC_DG': {},
             'C_DG': {},
@@ -50,34 +44,41 @@ class VppInterface:
             'LR_S_pickup': {},
             'LR_S_drop': {},
         }
-        gridNodes, vppBoxNodes = self.getGridNodes(), self.getVppBoxNodes()
+        vppBoxNodes = self.getVppBoxNodes()
         edgeIds = self.getEdgeIds()
         for i0, box in vppBoxNodes:
-            dat['SUC_DG'][i0] = {},
-            dat['SDC_DG'][i0] = {},
-            dat['C_DG'][i0] = {},
-            dat['P_DG_min'][i0] = {},
-            dat['P_DG_max'][i0] = {},
-            dat['Q_DG_min'][i0] = {},
-            dat['Q_DG_max'][i0] = {},
-            dat['RU_DG'][i0] = {},
-            dat['RD_DG'][i0] = {},
-            dat['MUT'][i0] = {},
-            dat['MDT'][i0] = {},
-            dat['P_ChES_max'][i0] = {}, 
-            dat['P_DchES_max'][i0]= {},
-            dat['SOE_ES_min'][i0] = {},
-            dat['SOE_ES_max'][i0] = {},
-            dat['INC_S'][i0] = {},
-            dat['alpha_S_flex'][i0] = {},
-            dat['LR_S_pickup'][i0]  = {},
-            dat['LR_S_drop'][i0] = {},
+            dat['P_PV'][i0] = {}
+            dat['P_Wind'][i0] = {}
+            dat['SUC_DG'][i0] = {}
+            dat['SDC_DG'][i0] = {}
+            dat['C_DG'][i0] = {}
+            dat['P_DG_min'][i0] = {}
+            dat['P_DG_max'][i0] = {}
+            dat['Q_DG_min'][i0] = {}
+            dat['Q_DG_max'][i0] = {}
+            dat['RU_DG'][i0] = {}
+            dat['RD_DG'][i0] = {}
+            dat['MUT'][i0] = {}
+            dat['MDT'][i0] = {}
+            dat['P_ChES_max'][i0] = {} 
+            dat['P_DchES_max'][i0]= {}
+            dat['SOE_ES_min'][i0] = {}
+            dat['SOE_ES_max'][i0] = {}
+            dat['INC_S'][i0] = {}
+            dat['alpha_S_flex'][i0] = {}
+            dat['LR_S_pickup'][i0]  = {}
+            dat['LR_S_drop'][i0] = {}
             # flex container data
-            fl_container = box.fl_collection
-            dat['INC_S'][i0] = fl_container.get('INC_S')
-            dat['alpha_S_flex'][i0] = fl_container.get('alpha_S_flex')
-            dat['LR_S_pickup'][i0] = fl_container.get('LR_S_pickup')
-            dat['LR_S_drop'][i0] = fl_container.get('LR_S_drop')
+            # TODO change this
+            if box.trade_compatible:
+                continue
+            load_collection = box.load_collection
+            dat['INC_S'][i0] = load_collection.get('INC_S')
+            dat['alpha_S_flex'][i0] = load_collection.get('alpha_S_flex')
+            dat['LR_S_pickup'][i0] = load_collection.get('LR_S_pickup')
+            dat['LR_S_drop'][i0] = load_collection.get('LR_S_drop')
+            dat['P_S_L'][i0] = load_collection.get('P_S_L')
+            dat['Q_S_L'][i0] = load_collection.get('Q_S_L')
             #
             for i1, dg in box.dg_resources.getItems():
                 dat['SUC_DG'][i0][i1] = dg.get('SUC_DG')
@@ -98,9 +99,10 @@ class VppInterface:
                 dat['SOE_ES_min'][i0][i1] = es.get('SOE_ES_min')
                 dat['SOE_ES_max'][i0][i1] = es.get('SOE_ES_max')
             for i1, pv in box.pv_resources.getItems():
-                #dat['-wt']['P_PV'][i0][i1] = dg.get('P_PV')
+                dat['P_PV'][i0][i1] = pv.get('P_PV')
                 pass
             for i1, wf in box.wf_resources.getItems():
+                dat['P_Wind'][i0][i1] = wf.get('P_Wind')
                 # P_Wind
                 pass
             pass
