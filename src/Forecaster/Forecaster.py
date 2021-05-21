@@ -1,5 +1,6 @@
 import requests
 from src.Forecaster.UncertaintyParams import UncertaintyParams
+from src.Forecaster.utils import read_uncertainty_params, read_node_flexible_load, read_node_fixed_load
 
 
 class Forecaster:
@@ -66,7 +67,8 @@ class ForecasterAPI:
         self.node_id = node_id
 
     def __get_uncertainty_params(self, w: int, t: int):
-        res = requests.get(self.endpoint + "/uncertainty-params/" + str(t)).json()
+        # res = requests.get(self.endpoint + "/uncertainty-params/" + str(t)).json()
+        res = read_uncertainty_params(t)
         uncertainty_params = UncertaintyParams.get_instance_by_json(res['data'])
         if res['status'] != 404:
             return {
@@ -79,8 +81,9 @@ class ForecasterAPI:
         raise (IndexError(f"No results for time={t}"))
 
     def get_fixed_load(self, t: int):
-        res = res = requests.get(self.endpoint + "/node-fixed-load/" + str(
-            self.node_id) + f"?time={t}").json()
+        # res = res = requests.get(self.endpoint + "/node-fixed-load/" + str(
+        #     self.node_id) + f"?time={t}").json()
+        res = read_node_flexible_load(self.node_id, t)
         data = res['data']
         if res['status'] != 404:
             return data['load']
@@ -88,8 +91,9 @@ class ForecasterAPI:
         raise (IndexError(f"No results for time={t}"))
 
     def get_flexible_load(self, w: int, t: int):
-        res = res = requests.get(self.endpoint + "/node-flexible-load/" + str(
-            self.node_id) + f"?time={t}").json()
+        # res = res = requests.get(self.endpoint + "/node-flexible-load/" + str(
+        #     self.node_id) + f"?time={t}").json()
+        res = read_node_fixed_load(self.node_id, t)
         data = res['data']
         if res['status'] != 404:
             return data['load']
