@@ -6,6 +6,8 @@ class GridNode(Junction):
     ###
     def __init__(self) -> None:
         # setpoints
+        print('ERROR: why did you init me?')
+        raise Exception('ERROR: why did you init me? (GridNode)')
         self.sp_p_da_buy = {}
         self.sp_p_da_sell = {}
     
