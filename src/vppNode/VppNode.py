@@ -23,9 +23,19 @@ class VppNode:
         id = self.junctionMp.add(junction)
         return id
 
+    def add_junction_by_id(self, _id, junction: Junction) -> None:
+        self.junctionMp.add_by_id(junction)
+
     # adds a new undirected-edge to the graph
     def add_edge(self, junctionIds: Tuple[int,int]) -> int:
         edge = Edge(junctionIds, LineProps(100, 1, 1, 1, 0))
+        id = self.edgeMp.add(edge)
+        self.junctionMp.get(junctionIds[0]).add_edge(id)
+        self.junctionMp.get(junctionIds[1]).add_edge(id)
+        return id
+
+    def add_edge_by_line(self, junctionIds: Tuple[int,int], line: LineProps):
+        edge = Edge(junctionIds, line)
         id = self.edgeMp.add(edge)
         self.junctionMp.get(junctionIds[0]).add_edge(id)
         self.junctionMp.get(junctionIds[1]).add_edge(id)
