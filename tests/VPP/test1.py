@@ -1,3 +1,5 @@
+import pprint
+from src.vppNode.VppInterface import VppInterface
 from src.vppNode.VppBoxNode import VppBoxNode
 from src.vppNode.VppNode import VppNode
 from src.vppNode.Junction import Junction
@@ -109,3 +111,8 @@ connections_history = {}
 for connection in connections:
     _id = vppNode.add_edge(connection['nodes'], connection['line'])
     connections_history[_id] = connection
+
+# test
+interf = VppInterface(vppNode)
+dat = interf.get_optimizer_input_data()
+pprint.pprint(dat)
