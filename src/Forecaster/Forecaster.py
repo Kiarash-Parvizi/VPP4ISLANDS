@@ -83,7 +83,7 @@ class ForecasterAPI:
     def get_fixed_load(self, t: int):
         # res = res = requests.get(self.endpoint + "/node-fixed-load/" + str(
         #     self.node_id) + f"?time={t}").json()
-        res = read_node_flexible_load(self.node_id, t)
+        res = read_node_fixed_load(self.node_id, t)
         data = res['data']
         if res['status'] != 404:
             return data['load']
@@ -93,7 +93,7 @@ class ForecasterAPI:
     def get_flexible_load(self, w: int, t: int):
         # res = res = requests.get(self.endpoint + "/node-flexible-load/" + str(
         #     self.node_id) + f"?time={t}").json()
-        res = read_node_fixed_load(self.node_id, t)
+        res = read_node_flexible_load(self.node_id, t)
         data = res['data']
         if res['status'] != 404:
             return data['load']
