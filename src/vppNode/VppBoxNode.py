@@ -20,28 +20,33 @@ class VppBoxNode(Junction):
     # endpoint (url): API endpoint
     # node_id
     ###
-    def __init__(self, node_id: int, p_max: float = 0, i_max: float = 0, edges: Set[int] = set(), ip: str = "", \
-                 port: int = 0) -> None:
+    def __init__(self, node_id: int, trade_compatible: bool = False, edges: Set[int] = None, ip: str = "",
+                 port: int = 0, v_min: float = 0, v_max: float = 0, v_rated: float = 0) -> None:
+        if edges is None:
+            edges = set()
         super().__init__(edges)
         self.ip = ip; self.port = port
         self.node_id = node_id
 
         self.dg_resources = Mapper[DG]()
         self.es_resources = Mapper[ES]()
-        # self.fl_resources = Mapper[FL]()
         self.fl_collection = FLCollection()
         self.pv_resources = Mapper[PV]()
         self.wf_resources = Mapper[WF]()
         self.fixed_load = FixedLoad(self.node_id)
-        # self.flexible_load = 0
-        # self.fixed_load = 0
-        self.p_max = p_max
-        self.i_max = i_max
+
+        # params
+        self.v_min = v_min
+        self.v_max = v_max
+        self.v_rated = v_rated
 
         # grid node
-        self.to_buy_sell = False
+        self.trade_compatible = trade_compatible
+
+        # set points for grid node
         self.sp_p_da_buy = {}
         self.sp_p_da_sell = {}
+        self.sp_v = {}
 
     def update_data(self) -> None:
         req = ''
@@ -71,22 +76,39 @@ class VppBoxNode(Junction):
         else:  # add
             resource_map.add_by_id(number, resource_class.get_instance_by_json(data))
 
+    def get(self, key: str):
+        if key == "V_min":
+            return self.v_min
+        if key == "V_max":
+            return self.v_max
+        if self.trade_compatible:
+            if key == "V_Rated":
+                return self.v_rated
+        else:
+            raise KeyError("there is no such key for BoxNode")
+
     def set(self, key: str, value, w: int, t: int):
         sp_key = key.split("_")
         key = "_".join(sp_key[2: len(sp_key) - 3])
 
+        if key == "V":
+            if w not in self.sp_v:
+                self.sp_v[w] = {}
+            self.sp_v[w][t] = value
         # buying power in day-ahead energy market
-        if key == "P_DA_buy":
-            if w not in self.sp_p_da_buy:
-                self.sp_p_da_buy[w] = {}
-            self.sp_p_da_buy[w][t] = value
-        # selling power in day-ahead energy market
-        elif key == "P_DA_sell":
-            if w not in self.sp_p_da_sell:
-                self.sp_p_da_sell[w] = {}
-            self.sp_p_da_sell[w][t] = value
+        elif self.trade_compatible:
+            if key == "P_DA_buy":
+                if w not in self.sp_p_da_buy:
+                    self.sp_p_da_buy[w] = {}
+                self.sp_p_da_buy[w][t] = value
+            # selling power in day-ahead energy market
+            elif key == "P_DA_sell":
+                if w not in self.sp_p_da_sell:
+                    self.sp_p_da_sell[w] = {}
+                self.sp_p_da_sell[w][t] = value
         else:
-            raise(KeyError("there is no such key in GridNode"))
+            raise(KeyError("there is no such key in BoxNode"))
+
 
     def load_resources_from_api(self) -> None:
         omnio = OMNIOAPI(self.node_id)
@@ -109,8 +131,6 @@ class VppBoxNode(Junction):
         obj['node_id'] = self.node_id
         # obj['flexible_load'] = self.flexible_load
         # obj['fixed_load'] = self.fixed_load
-        obj['p_max'] = self.p_max
-        obj['i_max'] = self.i_max
         obj['ip'] = self.ip
         obj['port'] = self.port
         obj['edges'] = self.edges

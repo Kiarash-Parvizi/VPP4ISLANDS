@@ -9,18 +9,23 @@ NNodes = 15
 
 vppNode = VppNode()
 
-nodes: Dict[int, Junction] = {3: VppBoxNode(node_id=3, p_max=100, i_max=100),
-                                4: VppBoxNode(node_id=4, p_max=100, i_max=100),
-                                7: VppBoxNode(node_id=7, p_max=100, i_max=100),
-                                8: VppBoxNode(node_id=8, p_max=100, i_max=100),
-                                11: VppBoxNode(node_id=11, p_max=100, i_max=100),
-                                13: VppBoxNode(node_id=13, p_max=100, i_max=100),
-                                14: VppBoxNode(node_id=14, p_max=100, i_max=100),
-                                15: VppBoxNode(node_id=15, p_max=100, i_max=100)}
+nodes: Dict[int, Junction] = {
+                                # GridNode
+                                1: VppBoxNode(node_id=1, trade_compatible=True),
+                                # BoxNodes
+                                3: VppBoxNode(node_id=3),
+                                4: VppBoxNode(node_id=4),
+                                7: VppBoxNode(node_id=7),
+                                8: VppBoxNode(node_id=8),
+                                11: VppBoxNode(node_id=11),
+                                13: VppBoxNode(node_id=13),
+                                14: VppBoxNode(node_id=14),
+                                15: VppBoxNode(node_id=15)
+}
 
 for i in range(1, NNodes + 1):
     if i not in nodes.keys():
-        nodes[i] = Junction()
+        nodes[i] = VppBoxNode(node_id=i)
 
 for _, node in nodes.items():
     if isinstance(node, VppBoxNode):
@@ -104,4 +109,3 @@ connections_history = {}
 for connection in connections:
     _id = vppNode.add_edge(connection['nodes'], connection['line'])
     connections_history[_id] = connection
-
