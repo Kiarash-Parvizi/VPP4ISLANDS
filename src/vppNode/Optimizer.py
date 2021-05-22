@@ -203,9 +203,12 @@ class Optimizer:
             U_DG     = LU['DG'] = {}
             SOE_ES   = L_SOE['ES'] = {}
             for nId, nd in vppBoxNodes:
+                # tradeNodes
+                if nd.trade_compatible:
+                    continue
                 # load
-                P_S_flex[nId] = 0
-                Q_S_flex[nId] = 0
+                P_S_flex[nId] = 0.
+                Q_S_flex[nId] = 0.
                 # dg
                 if nd.dg_resources.len() > 0:
                     P_DG[nId] = {}
@@ -504,9 +507,12 @@ class Optimizer:
             L0 = self.var[w][0]
             L1 = self.var[w][self.NT]
             for nId, nd in self.vppBoxNodes:
+                # tradeNodes
+                if nd.trade_compatible:
+                    continue
                 # load
-                L0['P']['S']['flex'] = L1['P']['S']['flex'].x
-                L0['Q']['S']['flex'] = L1['P']['S']['flex'].x
+                L0['P']['S']['flex'][nId] = L1['P']['S']['flex'][nId].x
+                L0['Q']['S']['flex'][nId] = L1['P']['S']['flex'][nId].x
                 # dg
                 if nd.dg_resources.len() > 0:
                     for i, _ in nd.dg_resources.getItems():
@@ -517,4 +523,4 @@ class Optimizer:
                 if nd.es_resources.len() > 0:
                     for i, _ in nd.es_resources.getItems():
                         L0['SOE']['ES'][nId][i] = L1['SOE']['ES'][nId][i]
-        self.vppInterface.distribute_optimizerOutput(self.var)
+        self.vppInterface.distribute_optimizerOutput(self.var, self.NW, self.NT, self.NM)
