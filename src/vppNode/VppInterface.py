@@ -1,6 +1,6 @@
+from src.PowerResources.LoadCollection import LoadColleciton
 from src.vppNode.Edge import Edge
 from src.Forecaster.Forecaster import Forecaster
-from .GridNode import GridNode
 from .Junction import Junction
 from .VppBoxNode import VppBoxNode
 from .VppNode import VppNode
@@ -135,13 +135,6 @@ class VppInterface:
             if isinstance(val, VppBoxNode):
                 ls.append((key, val))
         return ls
-    # returns a list of all gridNodes
-    def getGridNodes(self) -> List[Tuple[int, GridNode]]:
-        ls: List[Tuple[int, GridNode]] = []
-        for key, val in self.vppNode.junctionMp.getItems():
-            if isinstance(val, GridNode):
-                ls.append((key, val))
-        return ls
     
     # returns a list of all edgesIds
     def getEdgeIds(self) -> List[int]:
@@ -163,7 +156,6 @@ class VppInterface:
             busObj.set(v.varName, v.x, w, t)
         # tmp vars
         vppBoxNodes = self.getVppBoxNodes()
-        gridNodes   = self.getGridNodes()
         # set
         for w in range(1, NW+1):
             for t in range(1, NT+1):
@@ -171,11 +163,6 @@ class VppInterface:
                 # over gridNodes:
                 P_DA = L0['P']['DA']
                 Q_DA = L0['Q']['DA']
-                for nId, obj in gridNodes:
-                    setF(obj, w, t, P_DA['buy'][nId])
-                    setF(obj, w, t, P_DA['sell'][nId])
-                    setF(obj, w, t, Q_DA['buy'][nId])
-                    setF(obj, w, t, Q_DA['sell'][nId])
                 # over vppBoxNodes:
                 P_DG    = L0['P']['DG']
                 Q_DG    = L0['Q']['DG']
@@ -194,6 +181,12 @@ class VppInterface:
                 U_DG    = L0['U']['DG']
                 SOE_ES  = L0['SOE']['ES']
                 for nId, nd in vppBoxNodes:
+                    if nd.trade_compatible:
+                        setF(nd, w, t, P_DA['buy'][nId])
+                        setF(nd, w, t, P_DA['sell'][nId])
+                        setF(nd, w, t, Q_DA['buy'][nId])
+                        setF(nd, w, t, Q_DA['sell'][nId])
+                        continue
                     # dg
                     if nd.dg_resources.len() > 0:
                         for i, obj in nd.dg_resources.getItems():
@@ -209,8 +202,9 @@ class VppInterface:
                             setF(obj, w, t, P_DchES[nId][i])
                             setF(obj, w, t, SOE_ES[nId][i])
                     # fl
-                    setF(obj, w, t, P_S_flex[nId])
-                    setF(obj, w, t, Q_S_flex[nId])
+                    loadColleciton = nd.load_collection
+                    setF(loadColleciton, w, t, P_S_flex[nId])
+                    setF(loadColleciton, w, t, Q_S_flex[nId])
                     # directed edges
                     adj_nodes = self.getAdjNodeIds(nId, VppBoxNode)
                     if len(adj_nodes) != 0:
