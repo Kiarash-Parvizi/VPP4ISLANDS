@@ -6,4 +6,5 @@ optimizer = Optimizer(interf)
 
 #test
 if __name__ == '__main__':
+    optimizer.optimize()
     pass
