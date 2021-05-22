@@ -5,12 +5,14 @@ from typing import Tuple, List, Any
 import gurobipy as gp
 from gurobipy import GRB
 
+import pprint
 
 class Optimizer:
     def __init__(self, vppInterface: VppInterface) -> None:
         self.vppInterface = vppInterface
         # create gurobi model
         self.model = gp.Model("model1")
+        self.model.params.NonConvex = 2
         # add model variable
         self.NW, self.NT, self.NM = 1, 24, 20
         self.__create_variables()
@@ -70,6 +72,7 @@ class Optimizer:
                     'S': {
                         'delta': {},
                     },
+                    'I': {}
                 }
                 for t in range(1, NT+1)
             }
@@ -95,6 +98,7 @@ class Optimizer:
                 P_delta = L0['P']['delta']
                 Q_plus  = L0['Q']['+']
                 Q_minus = L0['Q']['-']
+                I       = L0['I']
                 Q_delta = L0['Q']['delta']
                 S_delta = L0['S']['delta']
                 v_DG    = L0['v']['DG']
@@ -106,6 +110,7 @@ class Optimizer:
                     if len(adj_nodes) != 0:
                         P_plus[nId] = {}
                         Q_plus[nId] = {}
+                        I[nId]      = {}
                         P_minus[nId] = {}
                         Q_minus[nId] = {}
                         P_delta[nId] = {}
@@ -123,6 +128,10 @@ class Optimizer:
                                     name='%x_%x_Q_+_%x_%x'%(w,t,nId,nId_p))
                             Q_minus[nId][nId_p] = self.model.addVar(vtype= GRB.CONTINUOUS,
                                     name='%x_%x_Q_-_%x_%x'%(w,t,nId,nId_p))
+                            I[nId][nId_p] = self.model.addVar(vtype= GRB.CONTINUOUS,
+                                    name='%x_%x_I_%x_%x'%(w,t,nId,nId_p))
+                            I[nId][nId_p] = self.model.addVar(vtype= GRB.CONTINUOUS,
+                                    name='%x_%x_I_%x_%x'%(w,t,nId,nId_p))
                             # m:
                             for m in range(1, NM+1):
                                 P_delta[nId][nId_p][m] = self.model.addVar(vtype= GRB.CONTINUOUS,
@@ -177,6 +186,40 @@ class Optimizer:
                         name='%x_%x_P_S_flex_%x'%(w,t,nId))
                     Q_S_flex[nId] = self.model.addVar(vtype= GRB.CONTINUOUS,
                         name='%x_%x_Q_S_flex_%x'%(w,t,nId))
+        # Initialize ZeroTime vars
+        for w in range(1, NW+1):
+            L0 = self.var[w][0] = {}
+            LP = L0['P'] = {}
+            LQ = L0['Q'] = {}
+            LPS = LP['S'] = {}
+            LQS = LQ['S'] = {}
+            LU  = L0['U'] = {}
+            L_SOE  = L0['SOE'] = {}
+            #
+            P_S_flex = LPS['flex'] = {}
+            Q_S_flex = LQS['flex'] = {}
+            P_DG     = LP['DG'] = {}
+            Q_DG     = LQ['DG'] = {}
+            U_DG     = LU['DG'] = {}
+            SOE_ES   = L_SOE['ES'] = {}
+            for nId, nd in vppBoxNodes:
+                # load
+                P_S_flex[nId] = 0
+                Q_S_flex[nId] = 0
+                # dg
+                if nd.dg_resources.len() > 0:
+                    P_DG[nId] = {}
+                    Q_DG[nId] = {}
+                    U_DG[nId] = {}
+                    for i, _ in nd.dg_resources.getItems():
+                        P_DG[nId][i] = 0
+                        Q_DG[nId][i] = 0
+                        U_DG[nId][i] = 0
+                # es
+                if nd.es_resources.len() > 0:
+                    SOE_ES[nId] = {}
+                    for i, _ in nd.es_resources.getItems():
+                        SOE_ES[nId][i] = 0
         #
 
     # uses the VppInterface to retrieve input values
@@ -233,6 +276,7 @@ class Optimizer:
         for w in range(1, NW+1):
             for t in range(1, NT+1):
                 vi = var[w][t]
+                vp = var[w][t-1]
                 for i0, nd in vppBoxNodes:
                     # vars
                     expr_sest_2_2, expr_sest_3_2 = gp.LinExpr(), gp.LinExpr()
@@ -240,10 +284,15 @@ class Optimizer:
                     adj_nodes = self.vppInterface.getAdjNodeIds(i0, VppBoxNode)
                     if len(adj_nodes) != 0:
                         for bp in adj_nodes:
+                            expr_sest_2_2 -= vi['P']['+'][i0][bp] - vi['P']['-'][i0][bp]
+                            expr_sest_3_2 -= vi['Q']['+'][i0][bp] - vi['Q']['-'][i0][bp]
                             expr_sest_2_2 += vi['P']['+'][bp][i0] - vi['P']['-'][bp][i0]
                             expr_sest_3_2 += vi['Q']['+'][bp][i0] - vi['Q']['-'][bp][i0]
-                    self.model.addConstr(expr_sest_2_2==0, "c_sest_2_2_%x_%x_%x"%(w,t,i0))
-                    self.model.addConstr(expr_sest_3_2==0, "c_sest_3_2_%x_%x_%x"%(w,t,i0))
+                            # undirected edges
+                            lineProps = self.vppInterface.getEdgeObj((i0, bp)).lineProps
+                            expr_sest_2_2 -= lineProps.get('R') * vi['I'][i0][bp]*vi['I'][i0][bp]
+                            expr_sest_3_2 -= lineProps.get('X') * vi['I'][i0][bp]*vi['I'][i0][bp]
+                            pass
                     # tradeNodes
                     if nd.trade_compatible:
                         L0 = vi['P']['DA']
@@ -257,31 +306,90 @@ class Optimizer:
                             expr_sest_2_2 += vi['P']['DG'][i0][i1]
                             expr_sest_3_2 += vi['Q']['DG'][i0][i1]
                             # l = NW * NT * len(dg)
+                            # sest 4 l
                             self.model.addConstr(
                                 dat['P_DG_min'][i0][i1] *
                                 vi['U']['DG'][i0][i1] <=
                                 vi['P']['DG'][i0][i1],
                                 'c_sest_4_left_%x_%x_%x_%x'%(w,t,i0,i1)
                             )
+                            # sest 4 r
                             self.model.addConstr(
                                 vi['P']['DG'][i0][i1] <=
                                 dat['P_DG_max'][i0][i1] *
                                 vi['U']['DG'][i0][i1],
                                 'c_sest_4_right_%x_%x_%x_%x'%(w,t,i0,i1)
                             )
+                            # sest 5 l
                             self.model.addConstr(
                                 dat['Q_DG_min'][i0][i1] *
                                 vi['U']['DG'][i0][i1] <=
                                 vi['Q']['DG'][i0][i1],
                                 'c_sest_5_left_%x_%x_%x_%x'%(w,t,i0,i1)
                             )
+                            # sest 5 r
                             self.model.addConstr(
                                 vi['Q']['DG'][i0][i1] <=
                                 dat['Q_DG_max'][i0][i1] *
                                 vi['U']['DG'][i0][i1],
                                 'c_sest_5_right_%x_%x_%x_%x'%(w,t,i0,i1)
                             )
-                    # es
+                            # sest 6
+                            self.model.addConstr(
+                                vi['U']['DG'][i0][i1] -
+                                vp['U']['DG'][i0][i1] ==
+                                vi['v']['DG']['SU'][i0][i1] -
+                                vi['v']['DG']['SD'][i0][i1],
+                                'c_sest_6_%x_%x_%x_%x'%(w,t,i0,i1)
+                            )
+                            # sest 7
+                            self.model.addConstr(
+                                vi['v']['DG']['SU'][i0][i1] +
+                                vi['v']['DG']['SD'][i0][i1] <= 1,
+                                'c_sest_7_%x_%x_%x_%x'%(w,t,i0,i1)
+                            )
+                            # sest 8
+                            self.model.addConstr(
+                                vi['P']['DG'][i0][i1] -
+                                vp['P']['DG'][i0][i1] <=
+                                dat['RU_DG'][i0][i1],
+                                'c_sest_8_%x_%x_%x_%x'%(w,t,i0,i1)
+                            )
+                            # sest 9
+                            self.model.addConstr(
+                                vp['P']['DG'][i0][i1] -
+                                vi['P']['DG'][i0][i1] <=
+                                dat['RD_DG'][i0][i1],
+                                'c_sest_9_%x_%x_%x_%x'%(w,t,i0,i1)
+                            )
+                            # sigma over future times
+                            expr_sest_10 = gp.LinExpr(dat['MUT'][i0][i1] * (
+                                vi['U']['DG'][i0][i1] -
+                                vp['U']['DG'][i0][i1]))
+                            expr_sest_11 = gp.LinExpr(dat['MDT'][i0][i1] * (
+                                vp['U']['DG'][i0][i1] -
+                                vi['U']['DG'][i0][i1]))
+                            # t+1 to MUT
+                            for tp in range(t+1, t+int(dat['MUT'][i0][i1])+1):
+                                if tp > NT: break
+                                vc = var[w][tp]
+                                expr_sest_10 += (1-vc['U']['DG'][i0][i1])
+                            # t+1 to MDT
+                            for tp in range(t+1, t+int(dat['MDT'][i0][i1])+1):
+                                if tp > NT: break
+                                vc = var[w][tp]
+                                expr_sest_10 += (vc['U']['DG'][i0][i1])
+                            # sest 10
+                            self.model.addConstr(
+                                expr_sest_10 <= dat['MUT'][i0][i1],
+                                'c_sest_10_%x_%x_%x_%x'%(w,t,i0,i1)
+                            )
+                            # sest 11
+                            self.model.addConstr(
+                                expr_sest_11 <= dat['MDT'][i0][i1],
+                                'c_sest_11_%x_%x_%x_%x'%(w,t,i0,i1)
+                            )
+                    # pv
                     if nd.pv_resources.len() > 0:
                         for i1, _ in nd.pv_resources.getItems():
                             expr_sest_2_2 += dat['P_PV'][i0][i1][w][t]
@@ -289,6 +397,48 @@ class Optimizer:
                     if nd.es_resources.len() > 0:
                         for i1, _ in nd.es_resources.getItems():
                             expr_sest_2_2 += vi['P']['DchES'][i0][i1] - vi['P']['ChES'][i0][i1]
+                            # sest 15 l
+                            self.model.addConstr(
+                                vi['P']['ChES'][i0][i1] >= 0,
+                                'c_sest_15_left_%x_%x_%x_%x'%(w,t,i0,i1)
+                            )
+                            # sest 15 r
+                            self.model.addConstr(
+                                vi['P']['ChES'][i0][i1] <=
+                                dat['P_ChES_max'][i0][i1],
+                                'c_sest_15_right_%x_%x_%x_%x'%(w,t,i0,i1)
+                            )
+                            # sest 16 l
+                            self.model.addConstr(
+                                vi['P']['DchES'][i0][i1] >= 0,
+                                'c_sest_16_left_%x_%x_%x_%x'%(w,t,i0,i1)
+                            )
+                            # sest 16 r
+                            self.model.addConstr(
+                                vi['P']['DchES'][i0][i1] <=
+                                dat['P_DchES_max'][i0][i1],
+                                'c_sest_16_right_%x_%x_%x_%x'%(w,t,i0,i1)
+                            )
+                            # sest 17
+                            self.model.addConstr(
+                                vi['SOE']['ES'][i0][i1] ==
+                                vp['SOE']['ES'][i0][i1] +
+                                (dat['eta_ES_Ch'] * vi['P']['ChES'][i0][i1]) -
+                                (vi['P']['DchES'][i0][i1] / dat['eta_ES_Dch']),
+                                'c_sest_17_%x_%x_%x_%x'%(w,t,i0,i1)
+                            )
+                            # sest 18 l
+                            self.model.addConstr(
+                                vi['SOE']['ES'][i0][i1] >=
+                                dat['SOE_ES_min'][i0][i1],
+                                'c_sest_18_left_%x_%x_%x_%x'%(w,t,i0,i1)
+                            )
+                            # sest 18 r
+                            self.model.addConstr(
+                                vi['SOE']['ES'][i0][i1] <=
+                                dat['SOE_ES_max'][i0][i1],
+                                'c_sest_18_right_%x_%x_%x_%x'%(w,t,i0,i1)
+                            )
                             pass
                     # wf
                     if nd.wf_resources.len() > 0:
@@ -296,6 +446,39 @@ class Optimizer:
                             expr_sest_2_2 += dat['P_Wind'][i0][i1][w][t]
                             pass
                     # load
+                    expr_sest_2_2 -= dat['P_S_L'][i0][t] - vi['P']['S']['flex'][i0]
+                    expr_sest_3_2 -= dat['Q_S_L'][i0][t] - vi['Q']['S']['flex'][i0]
+                    # set constr for every bus
+                    # sets 2
+                    self.model.addConstr(expr_sest_2_2==0, "c_sest_2_2_%x_%x_%x"%(w,t,i0))
+                    # sets 3
+                    self.model.addConstr(expr_sest_3_2==0, "c_sest_3_2_%x_%x_%x"%(w,t,i0))
+                    # sest 12 l
+                    self.model.addConstr(
+                        vi['P']['S']['flex'][i0] >= 0,
+                        'c_sest_12_left_%x_%x_%x'%(w,t,i0)
+                    )
+                    # sest 12 r
+                    self.model.addConstr(
+                        vi['P']['S']['flex'][i0] <=
+                        dat['alpha_S_flex'][i0] *
+                        dat['P_S_L'][i0][t],
+                        'c_sest_12_right_%x_%x_%x'%(w,t,i0)
+                    )
+                    # sest 13
+                    self.model.addConstr(
+                        vi['P']['S']['flex'][i0] -
+                        vp['P']['S']['flex'][i0] <=
+                        dat['LR_S_pickup'][i0],
+                        'c_sest_13_%x_%x_%x'%(w,t,i0)
+                    )
+                    # sest 14
+                    self.model.addConstr(
+                        vp['P']['S']['flex'][i0] -
+                        vi['P']['S']['flex'][i0] <=
+                        dat['LR_S_drop'][i0],
+                        'c_sest_14_%x_%x_%x'%(w,t,i0)
+                    )
         pass
     
     def set_equations(self):
@@ -309,7 +492,29 @@ class Optimizer:
     # removes old constraints
     def __rem_constraints(self):
         self.model.remove(self.model.getConstrs())
+
+    # run the optimizer
+    def optimize(self) -> None:
+        self.model.optimize()
     
     # uses the VppInterface to share the optimizer output with other components
     def distribute_results(self):
+        # reset ZeroTime vars
+        for w in range(1, self.NW+1):
+            L0 = self.var[w][0]
+            L1 = self.var[w][self.NT]
+            for nId, nd in self.vppBoxNodes:
+                # load
+                L0['P']['S']['flex'] = L1['P']['S']['flex'].x
+                L0['Q']['S']['flex'] = L1['P']['S']['flex'].x
+                # dg
+                if nd.dg_resources.len() > 0:
+                    for i, _ in nd.dg_resources.getItems():
+                        L0['P']['DG'][nId][i] = L1['P']['DG'][nId][i].x
+                        L0['Q']['DG'][nId][i] = L1['Q']['DG'][nId][i].x
+                        L0['U']['DG'][nId][i] = L1['U']['DG'][nId][i].x
+                # es
+                if nd.es_resources.len() > 0:
+                    for i, _ in nd.es_resources.getItems():
+                        L0['SOE']['ES'][nId][i] = L1['SOE']['ES'][nId][i]
         self.vppInterface.distribute_optimizerOutput(self.var)
