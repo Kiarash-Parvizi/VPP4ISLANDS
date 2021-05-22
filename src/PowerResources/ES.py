@@ -90,7 +90,7 @@ class ES(Resource):
     
     def set(self, key: str, value, w: int, t: int):
         sp_key = key.split("_")
-        key = "_".join(sp_key[2: len(sp_key) - 3])
+        key = "_".join(sp_key[2: len(sp_key) - 2])
 
         # Scheduled Charge Power of ESs
         if key == "P_ChES":

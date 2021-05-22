@@ -107,7 +107,7 @@ class DG(Resource):
     
     def set(self, key: str, value, w: int, t: int):
         sp_key = key.split("_")
-        key = "_".join(sp_key[2: len(sp_key) - 3])
+        key = "_".join(sp_key[2: len(sp_key) - 2])
 
         # Active output power of DG units
         if key == "P_DG":

@@ -15,7 +15,7 @@ class LoadColleciton:
 
     def set(self, key: str, value, w: int, t: int):
         sp_key = key.split("_")
-        key = "_".join(sp_key[2: len(sp_key) - 3])
+        key = "_".join(sp_key[2: len(sp_key) - 1])
 
         # active scheduled power of flexible load
         if key == "P_S_flex":
