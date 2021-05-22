@@ -1,3 +1,4 @@
+from src.vppNode.Edge import Edge
 from src.Forecaster.Forecaster import Forecaster
 from .GridNode import GridNode
 from .Junction import Junction
@@ -20,8 +21,8 @@ class VppInterface:
             'Q_S_L': {},
             'P_PV': {},
             'P_Wind': {},
-            'eta_ES_Ch': { 0.85 },
-            'eta_ES_Dch': { 0.85 },
+            'eta_ES_Ch': 0.85,
+            'eta_ES_Dch': 0.85,
             'rho': forcaster.get('rho'),
             'lambda_DA': forcaster.get('lambda_DA'),
             'SUC_DG': {},
@@ -148,6 +149,11 @@ class VppInterface:
         for key, _ in self.vppNode.edgeMp.getItems():
             ls.append(key)
         return ls
+
+    # get edge
+    def getEdgeObj(self, nodeIds: Tuple[int, int]) -> Edge:
+        eId = self.vppNode.get_edgeId(nodeIds)
+        return self.vppNode.edgeMp.get(eId)
 
     # change the graph and other possible related components based on setpoints
     def distribute_optimizerOutput(self, var, NW, NT, NM):
