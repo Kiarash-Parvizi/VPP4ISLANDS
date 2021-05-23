@@ -18,25 +18,31 @@ try:
 
     # Set objective
     print('OP 2:')
-    m.setObjective(x + 3*y + 5 * z, GRB.MAXIMIZE)
+    tmp = gp.LinExpr()
+    tmp += x*y + 3*y + 6 * z
+    tmp += 3*x*y
+    m.setObjective(tmp, GRB.MAXIMIZE)
 
     # Add constraint: x + 2 y + 3 z <= 4
     print('OP 3:')
     m.addConstr(x + 2*y + 3*z <= 41, "c0")
 
     # Add constraint: x + y >= 1
-    m.addConstr(2*x + y >= 5, "c1")
+    m.addConstr(2*x + y == 5, "c1")
 
     # Optimize model
     print('OP 4:')
     m.optimize()
 
     print('------------')
+    mpd = list(map(lambda v: (v.varName, v.x), m.getVars()))
+    print('mpd:', mpd)
     for v in m.getVars():
         print('%s %g' % (v.varName, v.x))
 
     print('------------')
     print('Obj: %g' % m.objVal)
+    print('Gurobi-status: OK')
 
 except gp.GurobiError as e:
     print('Error code ' + str(e.errno) + ': ' + str(e))
