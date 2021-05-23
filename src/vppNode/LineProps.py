@@ -1,3 +1,4 @@
+from typing import Tuple
 
 class LineProps:
     # instance variables
@@ -12,6 +13,12 @@ class LineProps:
         self.x = x
         self.i_max = i_max
         self.i_max_pu = i_max_pu
+        self.dir_data = {
+            'P_+': {},
+            'P_-': {},
+            'Q_+': {},
+            'Q_-': {},
+        } # data about directed edge
 
         # setpoings:
         self.i_current = {}
@@ -42,3 +49,26 @@ class LineProps:
             self.i_current[w][t] = value
         else:
             raise KeyError("there is no such key in LineProps")
+
+    def set_dir_data(self, key: str, value, DEdge: Tuple[int, int], w: int, t: int):
+        # just for test
+        #if not hasattr(self, 'cnt'):
+        #    self.cnt = 0
+        #self.cnt += 1
+        #if self.cnt == 192:
+        #    import pprint
+        #    pprint.pprint(self.dir_data)
+        #print('cnt: ', self.cnt)
+        sp_key = key.split("_")
+        key = "_".join(sp_key[2: len(sp_key) - 2])
+
+        if not key in self.dir_data:
+            raise KeyError("there is no such key in LineProps::dir_data")
+        
+        if DEdge not in self.dir_data[key]:
+            self.dir_data[key][DEdge] = {}
+
+        ddat = self.dir_data[key][DEdge]
+        if w not in ddat:
+            ddat[w] = {}
+        ddat[w][t] = value
