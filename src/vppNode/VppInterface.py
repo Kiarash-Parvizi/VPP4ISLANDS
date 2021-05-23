@@ -154,6 +154,9 @@ class VppInterface:
         def setF(busObj, w: int, t: int, v):
             ''' v: gurobiVar '''
             busObj.set(v.varName, v.x, w, t)
+        def setD(busObj, w: int, t: int, DEdge: Tuple[int,int], v):
+            ''' v: gurobiVar '''
+            busObj.set_dir_data(v.varName, v.x, DEdge, w, t)
         # tmp vars
         vppBoxNodes = self.getVppBoxNodes()
         # set
@@ -209,16 +212,16 @@ class VppInterface:
                     adj_nodes = self.getAdjNodeIds(nId, VppBoxNode)
                     if len(adj_nodes) != 0:
                         for nId_p in adj_nodes:
-                            # TODO
-                            #setF(obj, w, t, P_plus[nId][nId_p])
-                            #setF(obj, w, t, P_minus[nId][nId_p])
-                            #setF(obj, w, t, Q_plus[nId][nId_p])
-                            #setF(obj, w, t, Q_minus[nId][nId_p])
-                            # m:
-                            for m in range(1, NM+1):
-                                # TODO
-                                #setF(obj, w, t, P_delta[nId][nId_p][m])
-                                #setF(obj, w, t, Q_delta[nId][nId_p][m])
-                                #setF(obj, w, t, S_delta[nId][nId_p])
-                                pass
+                            lineProps = self.getEdgeObj((nId, nId_p)).lineProps
+                            setD(lineProps, w, t, (nId,nId_p), P_plus[nId][nId_p])
+                            setD(lineProps, w, t, (nId,nId_p), P_minus[nId][nId_p])
+                            setD(lineProps, w, t, (nId,nId_p), Q_plus[nId][nId_p])
+                            setD(lineProps, w, t, (nId,nId_p), Q_minus[nId][nId_p])
+                            ## m:
+                            #for m in range(1, NM+1):
+                            #    # NOT NEEDED
+                            #    #setF(obj, w, t, P_delta[nId][nId_p][m])
+                            #    #setF(obj, w, t, Q_delta[nId][nId_p][m])
+                            #    #setF(obj, w, t, S_delta[nId][nId_p])
+                            pass
         # end of distribute_optimizerOutput
