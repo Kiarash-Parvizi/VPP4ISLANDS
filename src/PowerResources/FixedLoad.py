@@ -9,12 +9,12 @@ class FixedLoad:
         pr_load         (float): output type - Kwh price
         """
 
-    def __init__(self, node_id: int):
+    def __init__(self, node_id: int, **kwargs):
         self.node_id = node_id
         # input
-        self.p_consumption = 0
+        self.p_consumption = kwargs.pop('p_consumption', 0)
         # output
-        self.pr_load = 0
+        self.pr_load = kwargs.pop('pr_load', 0)
 
     def set_p_consumption(self, p_consumption: float) -> None:
         self.p_consumption = p_consumption

@@ -38,3 +38,19 @@ class Mapper(Generic[T]):
         if self.contains(id):
             return self.mp[id]
         return None
+
+    def to_dict(self) -> dict:
+        obj = {}
+        obj['counter'] = self.counter
+        obj['mp'] = {}
+        for key, value in self.mp.items():
+            obj['mp'][key] = value.to_dict()
+        return obj
+    
+    @staticmethod
+    def create_from_dict(_dict: dict, _obj):
+        obj = Mapper[T]()
+        obj.counter = _dict['counter']
+        for key, value in _dict['mp'].items():
+            obj.mp[key] = _obj.create_from_dict(value)
+        return obj

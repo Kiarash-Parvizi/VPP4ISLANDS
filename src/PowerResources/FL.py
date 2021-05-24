@@ -17,7 +17,8 @@ class FL(Resource):
     on          (bool):  output type: indicates activeness of FlexibleLoads
     """
 
-    def __init__(self, node_id: int, number: int, alfa: float, lr_pickup: float, lr_drop: float, inc: float) -> None:
+    def __init__(self, node_id: int, number: int, alfa: float, lr_pickup: float, 
+        lr_drop: float, inc: float, **kwargs) -> None:
         super().__init__(node_id, number)
         self.alfa = alfa
         self.lr_pickup = lr_pickup
@@ -28,8 +29,8 @@ class FL(Resource):
         self.pr_fl = 0
         self.on = True
         # setpoints
-        self.sp_p_flex = {}
-        self.sp_q_flex = {}
+        self.sp_p_flex = kwargs.pop('sp_p_flex', {})
+        self.sp_q_flex = kwargs.pop('sp_q_flex', {})
 
     def get_p_fl(self) -> float:
         return self.p_fl

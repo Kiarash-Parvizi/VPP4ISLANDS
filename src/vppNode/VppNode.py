@@ -89,3 +89,17 @@ class VppNode:
         if (e0 == None):
             raise Exception('get_BusIds : err0')
         return e0.junctions
+
+    def to_dict(self) -> dict:
+        obj = {
+            'edgeMp': self.edgeMp.to_dict(),
+            'junctionMp': self.junctionMp.to_dict()
+        }
+        return obj
+    
+    @staticmethod
+    def create_from_dict(_dict: dict):
+        # TODO: complete it
+        _dict['edgeMp'] = Mapper[Edge].create_from_dict(_dict['edgeMp', Edge])
+        _dict['junctionMp'] = Mapper[Junction].create_from_dict(_dict['junctionMp'], VppBoxNode)
+        return 

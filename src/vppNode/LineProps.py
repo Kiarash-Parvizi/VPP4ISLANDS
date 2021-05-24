@@ -7,14 +7,14 @@ class LineProps:
     # i_max_pu: float -> i max (p.u)
     ###
 
-    def __init__(self, r, x, i_max, i_max_pu) -> None:
+    def __init__(self, r: float, x: float, i_max: float, i_max_pu: float, **kwargs) -> None:
         self.r = r
         self.x = x
         self.i_max = i_max
         self.i_max_pu = i_max_pu
 
         # setpoings:
-        self.i_current = {}
+        self.i_current = kwargs.pop('i_current', {})
 
     def calc_powerLoss(self) -> float:
         ### calc power loss here
@@ -42,3 +42,10 @@ class LineProps:
             self.i_current[w][t] = value
         else:
             raise KeyError("there is no such key in LineProps")
+
+    def to_dict(self):
+        return self.__dict__
+    
+    @staticmethod
+    def create_from_dict(_dict: dict):
+        return LineProps(**_dict)

@@ -22,20 +22,23 @@ class VppBoxNode(Junction):
     # node_id
     ###
     def __init__(self, node_id: int, trade_compatible: bool = False, edges: Set[int] = None, ip: str = "",
-                 port: int = 0, v_min: float = 0, v_max: float = 0, v_rated: float = 0) -> None:
+                 port: int = 0, v_min: float = 0, v_max: float = 0, v_rated: float = 0, **kwargs) -> None:
         if edges is None:
             edges = set()
         super().__init__(edges)
         self.ip = ip; self.port = port
         self.node_id = node_id
 
-        self.dg_resources = Mapper[DG]()
-        self.es_resources = Mapper[ES]()
-        self.pv_resources = Mapper[PV]()
-        self.wf_resources = Mapper[WF]()
+        self.dg_resources = kwargs.pop('dg_resources', Mapper[DG]())
+        self.es_resources = kwargs.pop('es_resources', Mapper[ES]())
+        self.pv_resources = kwargs.pop('pv_resources', Mapper[PV]())
+        self.wf_resources = kwargs.pop('wf_resources', Mapper[WF]())
 
-        self.load_collection = LoadColleciton()
-        self.load_collection.fixed_loads.add(FixedLoad(self.node_id))
+        if 'load_collection' in kwargs:
+            self.load_collection = kwargs['load_collection']
+        else:
+            self.load_collection = LoadColleciton()
+            self.load_collection.fixed_loads.add(FixedLoad(self.node_id))
 
         # params
         self.v_min = v_min
@@ -46,9 +49,9 @@ class VppBoxNode(Junction):
         self.trade_compatible = trade_compatible
 
         # set points for grid node
-        self.sp_p_da_buy = {}
-        self.sp_p_da_sell = {}
-        self.sp_v = {}
+        self.sp_p_da_buy = kwargs.pop('sp_p_da_buy', {})
+        self.sp_p_da_sell = kwargs.pop('sp_p_da_sell', {})
+        self.sp_v = kwargs.pop('sp_v', {})
 
     def update_data(self) -> None:
         req = ''
@@ -64,7 +67,7 @@ class VppBoxNode(Junction):
     def print_resource(resource_map: Mapper) -> None:
         items = resource_map.getItems()
         for item in items:
-            print(item[0], " => ", item[1])
+            print(item[0], " ", type(item[0]), " => ", item[1])
 
     def __update_resource_by_dic(self, resource_name: str, resource_class: Type[Resource], resource_map: Mapper,
                                data_dic: dict):
@@ -131,13 +134,28 @@ class VppBoxNode(Junction):
         obj = {}
         obj['_id'] = self.node_id
         obj['node_id'] = self.node_id
-        # obj['flexible_load'] = self.flexible_load
-        # obj['fixed_load'] = self.fixed_load
         obj['ip'] = self.ip
         obj['port'] = self.port
-        obj['edges'] = self.edges
+        # obj['edges'] = self.edges
+        obj['dg_resources'] = self.dg_resources.to_dict()
+        obj['es_resources'] = self.es_resources.to_dict()        
+        obj['pv_resources'] = self.pv_resources.to_dict()
+        obj['wf_resources'] = self.wf_resources.to_dict()
+        obj['v_min'] = self.v_min
+        obj['v_max'] = self.v_max
+        obj['v_rated'] = self.v_rated
+        obj['load_collection'] = self.load_collection.to_dict()
+        obj['trade_compatible'] = self.trade_compatible
+        obj['sp_p_da_buy'] = self.sp_p_da_buy
+        obj['sp_p_da_sell'] = self.sp_p_da_sell
+        obj['sp_v'] = self.sp_v
         return obj
     
     @staticmethod
-    def create_from_dict(self, _dict: dict):
+    def create_from_dict(_dict: dict):
+        _dict['dg_resources'] = Mapper[DG].create_from_dict(_dict['dg_resources'], DG)
+        _dict['es_resources'] = Mapper[ES].create_from_dict(_dict['es_resources'], ES)
+        _dict['pv_resources'] = Mapper[PV].create_from_dict(_dict['pv_resources'], PV)
+        _dict['wf_resources'] = Mapper[WF].create_from_dict(_dict['wf_resources'], WF)
+        _dict['load_collection'] = LoadColleciton.create_from_dict(_dict['load_collection'])
         return VppBoxNode(**_dict)

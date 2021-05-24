@@ -21,7 +21,7 @@ class ES(Resource):
 
     def __init__(self, node_id: int, number: int, p_max_charge: float, p_max_discharge: float, energy_capacity: float,
                  soe_min: float, soe_max: float, efficiency_charge: float, efficiency_discharge: float,
-                 soe_initial: float) -> None:
+                 soe_initial: float, **kwargs) -> None:
         super().__init__(node_id, number)
         self.p_max_charge = p_max_charge
         self.p_max_discharge = p_max_discharge
@@ -36,9 +36,9 @@ class ES(Resource):
         self.p_ess = 0
         self.pr_ess = 0
         # setpoints
-        self.sp_p_ch_es = {}
-        self.sp_p_dch_es = {}
-        self.sp_soe_es = {}
+        self.sp_p_ch_es = kwargs.pop('sp_p_ch_es', {})
+        self.sp_p_dch_es = kwargs.pop('sp_p_dch_es', {})
+        self.sp_soe_es = kwargs.pop('sp_soe_es', {})
 
     def get_p_ess(self) -> float:
         return self.p_ess

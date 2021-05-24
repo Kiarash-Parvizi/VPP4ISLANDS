@@ -23,7 +23,7 @@ class DG(Resource):
     """
 
     def __init__(self, node_id: int, number: int, p_max: float, p_min: float, q_max: float, q_min: float, rup: float,
-                 rdn: float, mut: float, mdt: float, cost: float, suc: float, sdc: float) -> None:
+                 rdn: float, mut: float, mdt: float, cost: float, suc: float, sdc: float, **kwargs) -> None:
         super().__init__(node_id, number)
         self.p_max = p_max
         self.p_min = p_min
@@ -41,11 +41,11 @@ class DG(Resource):
         self.pr_dg = 0
         self.on = True
         # setpoints
-        self.sp_p_dg = {}
-        self.sp_q_dg = {}
-        self.sp_v_dg_su = {}
-        self.sp_v_dg_sd = {}
-        self.sp_u_dg = {}
+        self.sp_p_dg = kwargs.pop('sp_p_dg', {})
+        self.sp_q_dg = kwargs.pop('sp_q_dg', {})
+        self.sp_v_dg_su = kwargs.pop('sp_v_dg_su', {})
+        self.sp_v_dg_sd = kwargs.pop('sp_v_dg_sd', {})
+        self.sp_u_dg = kwargs.pop('sp_u_dg', {})
 
     def get_p_dg(self) -> float:
         return self.p_dg

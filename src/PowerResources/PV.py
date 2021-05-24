@@ -10,13 +10,13 @@ class PV (Resource):
     p_pu        (float): input type: PV Power prediction
     pr_pv       (float): output type: Kwh price Pv Installation
     """
-    def __init__(self, node_id: int, number: int, p_max: float) -> None:
+    def __init__(self, node_id: int, number: int, p_max: float, **kwargs) -> None:
         super().__init__(node_id, number)
         self.p_max = p_max
         # inputs
-        self.p_pu = 0
+        self.p_pu = kwargs.pop('p_pu', 0)
         # outputs
-        self.pr_pv = 0
+        self.pr_pv = kwargs.pop('pr_pv', 0)
 
     def set_p_pu(self, p_pu: float) -> None:
         self.p_pu = p_pu

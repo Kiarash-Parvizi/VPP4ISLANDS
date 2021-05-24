@@ -5,13 +5,13 @@ from src.vppNode.Mapper import Mapper
 
 class LoadColleciton:
 
-    def __init__(self) -> None:
-        self.flex_loads = Mapper[FL]()
-        self.fixed_loads = Mapper[FixedLoad]()
+    def __init__(self, **kwargs) -> None:
+        self.flex_loads = kwargs.pop('flex_loads', Mapper[FL]())
+        self.fixed_loads = kwargs.pop('fixed_loads', Mapper[FixedLoad]())
 
         # setpoints
-        self.sp_p_flex = {}
-        self.sp_q_flex = {}
+        self.sp_p_flex = kwargs.pop('sp_p_flex', {})
+        self.sp_q_flex = kwargs.pop('sp_q_flex', {})
 
     def set(self, key: str, value, w: int, t: int):
         sp_key = key.split("_")
@@ -66,3 +66,20 @@ class LoadColleciton:
             return next(iter(self.fixed_loads.getItems()))[1].get("Q_L")
         
         raise (KeyError("there is no such key for FL"))
+    
+    def to_dict(self) -> dict:
+        obj = {}
+        obj['sp_p_flex'] = self.sp_p_flex
+        obj['sp_q_flex'] = self.sp_q_flex
+        obj['flex_loads'] = self.flex_loads.to_dict()
+        obj['fixed_loads'] = self.fixed_loads.to_dict()
+        return obj
+    
+    @staticmethod
+    def create_from_dict(_dict: dict):
+        obj = LoadColleciton()
+        obj.sp_q_flex = _dict['sp_q_flex']
+        obj.sp_p_flex = _dict['sp_p_flex']
+        obj.flex_loads = Mapper[FL]().create_from_dict(_dict['flex_loads'], FL)
+        obj.fixed_loads = Mapper[FixedLoad]().create_from_dict(_dict['fixed_loads'], FixedLoad)
+        return obj
