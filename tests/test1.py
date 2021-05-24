@@ -14,10 +14,11 @@ jId5 = vppNode.add_junction(junction_objs[4])
 print('jId1:', jId1)
 print('jId2:', jId2)
 
-eId1 = vppNode.add_edge((jId1, jId2))
-eId2 = vppNode.add_edge((jId2, jId3))
-eId3 = vppNode.add_edge((jId3, jId4))
-eId4 = vppNode.add_edge((jId3, jId5))
+lineProps = LineProps(0, 0, 0, 0)
+eId1 = vppNode.add_edge((jId1, jId2), lineProps)
+eId2 = vppNode.add_edge((jId2, jId3), lineProps)
+eId3 = vppNode.add_edge((jId3, jId4), lineProps)
+eId4 = vppNode.add_edge((jId3, jId5), lineProps)
 print('\teId1:', eId1)
 
 visualizer = GraphVisualizer(vppNode)
@@ -38,10 +39,10 @@ jId7 = vppNode.add_junction(junction_objs[6])
 jId8 = vppNode.add_junction(junction_objs[7])
 jId9 = vppNode.add_junction(junction_objs[8])
 
-eId5 = vppNode.add_edge((jId2, jId6))
-eId6 = vppNode.add_edge((jId2, jId7))
-eId7 = vppNode.add_edge((jId1, jId8))
-eId8 = vppNode.add_edge((jId1, jId9))
+eId5 = vppNode.add_edge((jId2, jId6), lineProps)
+eId6 = vppNode.add_edge((jId2, jId7), lineProps)
+eId7 = vppNode.add_edge((jId1, jId8), lineProps)
+eId8 = vppNode.add_edge((jId1, jId9), lineProps)
 
 visualizer.process()
 visualizer.draw()
@@ -61,9 +62,9 @@ visualizer.draw()
 
 # make a triangle
 
-eId6 = vppNode.add_edge((jId4, jId8))
-eId7 = vppNode.add_edge((jId8, jId9))
-eId8 = vppNode.add_edge((jId9, jId4))
+eId6 = vppNode.add_edge((jId4, jId8), lineProps)
+eId7 = vppNode.add_edge((jId8, jId9), lineProps)
+eId8 = vppNode.add_edge((jId9, jId4), lineProps)
 
 visualizer.process()
 visualizer.draw()
@@ -73,7 +74,7 @@ vppNode.clear()
 
 jId10 = vppNode.add_junction(junction_objs[9])
 jId11 = vppNode.add_junction(junction_objs[10])
-eid = vppNode.add_edge((jId10, jId11))
+eid = vppNode.add_edge((jId10, jId11), lineProps)
 
 visualizer.process()
 visualizer.draw()
