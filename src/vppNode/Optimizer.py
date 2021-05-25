@@ -72,7 +72,8 @@ class Optimizer:
                     'S': {
                         'delta': {},
                     },
-                    'I': {}
+                    'I': {},
+                    'V': {},
                 }
                 for t in range(1, NT+1)
             }
@@ -98,12 +99,13 @@ class Optimizer:
                 P_delta = L0['P']['delta']
                 Q_plus  = L0['Q']['+']
                 Q_minus = L0['Q']['-']
-                I       = L0['I']
                 Q_delta = L0['Q']['delta']
                 S_delta = L0['S']['delta']
                 v_DG    = L0['v']['DG']
                 U_DG    = L0['U']['DG']
                 SOE_ES  = L0['SOE']['ES']
+                I       = L0['I']
+                V       = L0['V']
                 for nId, nd in vppBoxNodes:
                     # directed edges
                     adj_nodes = self.vppInterface.getAdjNodeIds(nId, VppBoxNode)
@@ -130,8 +132,6 @@ class Optimizer:
                                     name='%x_%x_Q_-_%x_%x'%(w,t,nId,nId_p))
                             I[nId][nId_p] = self.model.addVar(vtype= GRB.CONTINUOUS,
                                     name='%x_%x_I_%x_%x'%(w,t,nId,nId_p))
-                            I[nId][nId_p] = self.model.addVar(vtype= GRB.CONTINUOUS,
-                                    name='%x_%x_I_%x_%x'%(w,t,nId,nId_p))
                             # m:
                             for m in range(1, NM+1):
                                 P_delta[nId][nId_p][m] = self.model.addVar(vtype= GRB.CONTINUOUS,
@@ -140,6 +140,9 @@ class Optimizer:
                                     name='%x_%x_Q_delta_%x_%x_%x'%(w,t,nId,nId_p,m))
                                 S_delta[nId][nId_p] = self.model.addVar(vtype= GRB.CONTINUOUS,
                                     name='%x_%x_S_delta_%x_%x'%(w,t,nId,nId_p))
+                    # bus vars
+                    V[nId] = self.model.addVar(vtype= GRB.CONTINUOUS,
+                            name='%x_%x_V_buy_%x'%(w,t,nId))
                     # tradeNodes
                     if nd.trade_compatible:
                         P_DA['buy'][nId] = self.model.addVar(vtype= GRB.CONTINUOUS,
@@ -291,10 +294,42 @@ class Optimizer:
                             expr_sest_3_2 -= vi['Q']['+'][i0][bp] - vi['Q']['-'][i0][bp]
                             expr_sest_2_2 += vi['P']['+'][bp][i0] - vi['P']['-'][bp][i0]
                             expr_sest_3_2 += vi['Q']['+'][bp][i0] - vi['Q']['-'][bp][i0]
+                            # form 4 left
+                            self.model.addConstr(
+                                vi['P']['+'][i0][bp]+vi['P']['-'][i0][bp] >= 0,
+                                "c_form_4_left_%x_%x_%x_%x"%(w,t,i0,bp)
+                            )
+                            # form 4 right
+                            self.model.addConstr(
+                                vi['P']['+'][i0][bp]+vi['P']['-'][i0][bp] <=
+                                dat['V_Rated'][1] * dat['I_max'][i0][bp],
+                                "c_form_4_right_%x_%x_%x_%x"%(w,t,i0,bp)
+                            )
+                            # form 5 left
+                            self.model.addConstr(
+                                vi['Q']['+'][i0][bp]+vi['P']['-'][i0][bp] >= 0,
+                                "c_form_5_left_%x_%x_%x_%x"%(w,t,i0,bp)
+                            )
+                            # form 5 right
+                            self.model.addConstr(
+                                vi['Q']['+'][i0][bp]+vi['P']['-'][i0][bp] <=
+                                dat['V_Rated'][1] * dat['I_max'][i0][bp],
+                                "c_form_5_right_%x_%x_%x_%x"%(w,t,i0,bp)
+                            )
+                            # form 6
+                            #print(': ', dat['R'][i0][bp])
+                            #print(': ', dat['X'][i0][bp])
+                            #self.model.addConstr(
+                            #    vi['V'][i0]**2 - vi['V'][bp]**2 -
+                            #    dat['Z'][i0][bp]**2 * vi['I'][i0][bp]**2 -
+                            #    2*dat['R'][i0][bp]*(vi['P']['+'][i0][bp]-vi['P']['-'][i0][bp]) -
+                            #    2*dat['X'][i0][bp]*(vi['Q']['+'][i0][bp]-vi['Q']['-'][i0][bp])==
+                            #    0,
+                            #    "c_form_6_right_%x_%x_%x_%x"%(w,t,i0,bp)
+                            #)
                             # undirected edges
-                            lineProps = self.vppInterface.getEdgeObj((i0, bp)).lineProps
-                            expr_sest_2_2 -= lineProps.get('R') * vi['I'][i0][bp]*vi['I'][i0][bp]
-                            expr_sest_3_2 -= lineProps.get('X') * vi['I'][i0][bp]*vi['I'][i0][bp]
+                            expr_sest_2_2 -= dat['R'][i0][bp] * vi['I'][i0][bp]*vi['I'][i0][bp]
+                            expr_sest_3_2 -= dat['X'][i0][bp] * vi['I'][i0][bp]*vi['I'][i0][bp]
                             pass
                     # tradeNodes
                     if nd.trade_compatible:
