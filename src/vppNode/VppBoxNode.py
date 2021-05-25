@@ -22,7 +22,7 @@ class VppBoxNode(Junction):
     # node_id
     ###
     def __init__(self, node_id: int, trade_compatible: bool = False, edges: Set[int] = None, ip: str = "",
-                 port: int = 0, v_min: float = 0, v_max: float = 0, v_rated: float = 0, **kwargs) -> None:
+                 port: int = 0, v_min: float = 0, v_max: float = 1e3, v_rated: float = 11e3, **kwargs) -> None:
         if edges is None:
             edges = set()
         super().__init__(edges)
