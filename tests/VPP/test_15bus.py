@@ -9,18 +9,21 @@ NNodes = 15
 
 vppNode = VppNode()
 
+_v_rated = 11e3
+_v_min = _v_rated * 0.95
+_v_max = _v_rated * 1.05
+
 nodes: Dict[int, VppBoxNode] = {
                                 # GridNode
-                                1: VppBoxNode(node_id=1, trade_compatible=True),
-                                # BoxNodes
-                                3: VppBoxNode(node_id=3),
-                                4: VppBoxNode(node_id=4),
-                                7: VppBoxNode(node_id=7),
-                                8: VppBoxNode(node_id=8),
-                                11: VppBoxNode(node_id=11),
-                                13: VppBoxNode(node_id=13),
-                                14: VppBoxNode(node_id=14),
-                                15: VppBoxNode(node_id=15)
+                                1 : VppBoxNode(node_id=1 , v_rated=_v_rated, v_max=_v_max, v_min=_v_min, trade_compatible=True),
+                                3 : VppBoxNode(node_id=3 , v_rated=_v_rated, v_max=_v_max, v_min=_v_min),
+                                4 : VppBoxNode(node_id=4 , v_rated=_v_rated, v_max=_v_max, v_min=_v_min),
+                                7 : VppBoxNode(node_id=7 , v_rated=_v_rated, v_max=_v_max, v_min=_v_min),
+                                8 : VppBoxNode(node_id=8 , v_rated=_v_rated, v_max=_v_max, v_min=_v_min),
+                                11: VppBoxNode(node_id=11, v_rated=_v_rated, v_max=_v_max, v_min=_v_min),
+                                13: VppBoxNode(node_id=13, v_rated=_v_rated, v_max=_v_max, v_min=_v_min),
+                                14: VppBoxNode(node_id=14, v_rated=_v_rated, v_max=_v_max, v_min=_v_min),
+                                15: VppBoxNode(node_id=15, v_rated=_v_rated, v_max=_v_max, v_min=_v_min)
 }
 
 for i in range(1, NNodes + 1):
