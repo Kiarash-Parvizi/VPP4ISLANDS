@@ -68,6 +68,7 @@ class LineProps:
         #print('cnt: ', self.cnt)
         sp_key = key.split("_")
         key = "_".join(sp_key[2: len(sp_key) - 2])
+        DEdge = str(DEdge)
 
         if not key in self.dir_data:
             raise KeyError("there is no such key in LineProps::dir_data")

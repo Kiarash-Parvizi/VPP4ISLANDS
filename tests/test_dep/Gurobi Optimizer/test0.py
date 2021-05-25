@@ -9,6 +9,7 @@ try:
 
     # Create a new model
     m = gp.Model("mip1")
+    m.params.NonConvex = 2
 
     # Create variables
     print('OP 1:')
@@ -25,10 +26,10 @@ try:
 
     # Add constraint: x + 2 y + 3 z <= 4
     print('OP 3:')
-    m.addConstr(x + 2*y + 3*z <= 41, "c0")
+    m.addConstr(x**2 + 2*y + 3*z <= 41, "c0")
 
     # Add constraint: x + y >= 1
-    m.addConstr(2*x + y == 5, "c1")
+    m.addConstr(2*x + y**2 == 5, "c1")
 
     # Optimize model
     print('OP 4:')
