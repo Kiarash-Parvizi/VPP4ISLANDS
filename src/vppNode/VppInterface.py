@@ -6,6 +6,8 @@ from .VppBoxNode import VppBoxNode
 from .VppNode import VppNode
 from typing import AbstractSet, Tuple, List, overload, Union, Type
 
+import json
+
 
 # interaction point between one VppNode and other components
 class VppInterface:
@@ -44,6 +46,8 @@ class VppInterface:
             'alpha_S_flex': {},
             'LR_S_pickup': {},
             'LR_S_drop': {},
+            'V_Rated': {},
+            'I_max': {}, 'R': {}, 'X': {}, 'Z': {}
         }
         vppBoxNodes = self.getVppBoxNodes()
         edgeIds = self.getEdgeIds()
@@ -69,9 +73,24 @@ class VppInterface:
             dat['alpha_S_flex'][i0] = {}
             dat['LR_S_pickup'][i0]  = {}
             dat['LR_S_drop'][i0] = {}
-            # flex container data
+            dat['I_max'][i0]= {}; dat['R'][i0]= {}; dat['X'][i0]= {}; dat['Z'][i0]= {}
+            # directed edges
+            adj_nodes = self.getAdjNodeIds(i0, VppBoxNode)
+            if len(adj_nodes) != 0:
+                for bp in adj_nodes:
+                    # form 4 left
+                    # undirected edges
+                    lineProps = self.getEdgeObj((i0, bp)).lineProps
+                    dat['I_max'][i0][bp] = lineProps.get('I_max')
+                    dat['R'][i0][bp] = lineProps.get('R')
+                    dat['X'][i0][bp] = lineProps.get('X')
+                    dat['Z'][i0][bp] = lineProps.get('Z')
+                    pass
+            # load container data
             # TODO change this
             if box.trade_compatible:
+                print('id: ', i0, box.get('V_Rated'))
+                dat['V_Rated'][i0] = box.get('V_Rated')
                 continue
             load_collection = box.load_collection
             dat['INC_S'][i0] = load_collection.get('INC_S')
@@ -225,3 +244,6 @@ class VppInterface:
                             #    #setF(obj, w, t, S_delta[nId][nId_p])
                             pass
         # end of distribute_optimizerOutput
+
+    def get_graph_asJson(self):
+        return json.dumps(self.vppNode.to_dict())
