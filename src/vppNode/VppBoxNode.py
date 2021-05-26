@@ -51,6 +51,8 @@ class VppBoxNode(Junction):
         # set points for grid node
         self.sp_p_da_buy = kwargs.pop('sp_p_da_buy', {})
         self.sp_p_da_sell = kwargs.pop('sp_p_da_sell', {})
+        self.sp_q_da_sell = kwargs.pop('sp_q_da_sell', {})
+        self.sp_q_da_buy = kwargs.pop('sp_q_da_buy', {})
         self.sp_v = kwargs.pop('sp_v', {})
 
     def update_data(self) -> None:
@@ -94,7 +96,7 @@ class VppBoxNode(Junction):
 
     def set(self, key: str, value, w: int, t: int):
         sp_key = key.split("_")
-        key = "_".join(sp_key[2: len(sp_key) - 3])
+        key = "_".join(sp_key[2: len(sp_key) - 1])
 
         if key == "V":
             if w not in self.sp_v:
@@ -111,6 +113,16 @@ class VppBoxNode(Junction):
                 if w not in self.sp_p_da_sell:
                     self.sp_p_da_sell[w] = {}
                 self.sp_p_da_sell[w][t] = value
+            elif key == "Q_DA_sell":
+                if w not in self.sp_q_da_sell:
+                    self.sp_q_da_sell[w] = {}
+                self.sp_q_da_sell[w][t] = value
+            elif key == "Q_DA_buy":
+                if w not in self.sp_q_da_buy:
+                    self.sp_q_da_buy[w] = {}
+                self.sp_q_da_buy[w][t] = value
+            else:
+                raise(KeyError(f"there is no such key in BoxNode"))    
         else:
             raise(KeyError("there is no such key in BoxNode"))
 
