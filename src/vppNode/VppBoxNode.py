@@ -160,6 +160,8 @@ class VppBoxNode(Junction):
         obj['trade_compatible'] = self.trade_compatible
         obj['sp_p_da_buy'] = self.sp_p_da_buy
         obj['sp_p_da_sell'] = self.sp_p_da_sell
+        obj['sp_q_da_sell'] = self.sp_q_da_sell
+        obj['sp_q_da_buy'] = self.sp_q_da_buy
         obj['sp_v'] = self.sp_v
         return obj
     
