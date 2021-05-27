@@ -42,10 +42,13 @@ P_DchES_max
 eta_ES
 SOE_ES_min
 SOE_ES_max
+SOE_init (for each ess)
+# TODO change name
+capacity (for each ess)
 
 Formulation pdf:
 parameters:
-V_Rated (Sb)
+V_Rated (b)
 V_min (b)
 V_max (b)
 X (dEdge)
@@ -54,10 +57,17 @@ I (dEdge)
 Z (dEdge)
 I_max
 --
+V_Rated = 11000
+V2_Rated = V_Rated**2
+# VNOM = 1 is not used
+# calc in optimizer
+S_delta (!m)
+--
 vars:
 V (b)
 --
 auxiliary vars:
-S_delta (!m)
 P_delta
 Q_delta
+I2
+V2
