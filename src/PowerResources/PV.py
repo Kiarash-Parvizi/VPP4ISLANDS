@@ -53,6 +53,6 @@ class PV (Resource):
     def get(self, key: str):
         # PV power generation
         if key == "P_PV":
-            return Forecaster(self.node_id).get_pv()
+            return [item * self.p_max for item in Forecaster(self.node_id).get_pv()]
         
         raise(KeyError("there is no such key for PV"))
