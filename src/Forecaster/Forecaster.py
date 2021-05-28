@@ -36,21 +36,21 @@ class Forecaster:
         t = 24
         data = {}
         for i in range(1, t + 1):
-            data[i] = self.forecaster_connector.get_fixed_load(t=i)
+            data[i] = self.forecaster_connector.get_fixed_load(t=i) * 1e3
         return data
 
     def get_ql(self):
         t = 24
         data = {}
         for i in range(1, t + 1):
-            data[i] = self.forecaster_connector.get_fixed_load(t=i) * self.pf
+            data[i] = self.forecaster_connector.get_fixed_load(t=i) * 1e3 * self.pf
         return data
 
     def get_da(self):
         t = 24
         data = {}
         for i in range(1, t + 1):
-            data[i] = self.forecaster_connector.get_da(t=i)
+            data[i] = self.forecaster_connector.get_da(t=i) / 1e3
         return data
 
     def get(self, key: str):

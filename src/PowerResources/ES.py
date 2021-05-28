@@ -57,13 +57,13 @@ class ES(Resource):
     def get_instance_by_json(item: dict):
         number = item['ES No.']
         node_id = item['Node_id']
-        p_max_charge = item['P_charge']
-        p_max_discharge = item['P_discharge']
-        energy_capacity = item['Energy Capacity']
-        soe_min = item['SOE_min']
-        soe_max = item['SOE_max']
-        efficiency = item['Efficiency']
-        soe_initial = item['SOE_initial']
+        p_max_charge = item['P_charge'] * 1e3 
+        p_max_discharge = item['P_discharge'] * 1e3
+        energy_capacity = item['Energy Capacity'] * 1e3
+        soe_min = item['SOE_min'] / 100
+        soe_max = item['SOE_max'] / 100
+        efficiency = item['Efficiency'] / 100
+        soe_initial = item['SOE_initial'] / 100
 
         return ES(node_id=node_id, number=number, p_max_charge=p_max_charge, p_max_discharge=p_max_discharge,
                   energy_capacity=energy_capacity, soe_min=soe_min, soe_max=soe_max, efficiency_charge=efficiency,
@@ -72,14 +72,15 @@ class ES(Resource):
     def update_params_by_json(self, item: dict) -> None:
         self.number = item['ES No.']
         self.node_id = item['Node_id']
-        self.p_max_charge = item['P_charge']
-        self.p_max_discharge = item['P_discharge']
-        self.energy_capacity = item['Energy Capacity']
-        self.soe_min = item['SOE_min']
-        self.soe_max = item['SOE_max']
-        self.efficiency_charge = item['Efficiency']
-        self.efficiency_discharge = item['Efficiency']
-        self.soe_initial = item['SOE_initial']
+        self.p_max_charge = item['P_charge'] * 1e3 
+        self.p_max_discharge = item['P_discharge'] * 1e3
+        self.energy_capacity = item['Energy Capacity'] * 1e3
+        self.soe_min = item['SOE_min'] / 100
+        self.soe_max = item['SOE_max'] / 100
+        self.efficiency = item['Efficiency'] / 100
+        self.soe_initial = item['SOE_initial'] / 100
+        self.efficiency_charge = self.efficiency
+        self.efficiency_discharge = self.efficiency
 
     def to_dict(self) -> dict:
         return self.__dict__
@@ -119,15 +120,17 @@ class ES(Resource):
             return self.p_max_discharge
         # Charge efficiency of energy storages
         if key == "eta_ChES":
-            return self.efficiency_charge / 100.
+            return self.efficiency_charge
         # Discharge efficiency of energy storages
         if key == "eta_DchES":
-            return self.efficiency_discharge / 100.
+            return self.efficiency_discharge
         # Minimum state of energy level of energy storages
         if key == "SOE_ES_min":
-            return self.soe_min / 100.
+            return self.soe_min
         # Maximum state of energy level of energy storages
         if key == "SOE_ES_max":
-            return self.soe_max / 100.
+            return self.soe_max
+        if key == "Energy_Capacity":
+            return self.energy_capacity
         raise(KeyError("there is no such key in ES"))
        
