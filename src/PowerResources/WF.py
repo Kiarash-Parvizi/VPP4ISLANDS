@@ -54,6 +54,10 @@ class WF (Resource):
     def get(self, key: str):
         # Wind farm Power generator
         if key == "P_Wind":
-            return [item * self.p_max for item in Forecaster(self.node_id).get_wind()]
-        
+            _data = Forecaster(self.node_id).get_wind()
+            for key1, w in _data.items():
+                for key2, item in w.items():
+                    _data[key1][key2] = item * self.p_max
+            return _data
+                
         raise(KeyError("there is no such key for WF"))
