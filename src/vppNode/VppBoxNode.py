@@ -22,7 +22,7 @@ class VppBoxNode(Junction):
     # node_id
     ###
     def __init__(self, node_id: int, trade_compatible: bool = False, edges: Set[int] = None, ip: str = "",
-                 port: int = 0, v_min: float = 0, v_max: float = 1e3, v_rated: float = 11e3, **kwargs) -> None:
+                 port: int = 0, v_min: float = 11000, v_max: float = 11550, v_rated: float = 11e3, **kwargs) -> None:
         if edges is None:
             edges = set()
         super().__init__(edges)
@@ -100,12 +100,8 @@ class VppBoxNode(Junction):
         sp_key = key.split("_")
         key = "_".join(sp_key[2: len(sp_key) - 1])
 
-        if key == "V":
-            if w not in self.sp_v:
-                self.sp_v[w] = {}
-            self.sp_v[w][t] = value
         # buying power in day-ahead energy market
-        elif self.trade_compatible:
+        if self.trade_compatible:
             if key == "P_DA_buy":
                 if w not in self.sp_p_da_buy:
                     self.sp_p_da_buy[w] = {}
