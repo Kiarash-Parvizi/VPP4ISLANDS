@@ -9,7 +9,7 @@ NNodes = 15
 
 vppNode = VppNode()
 
-_v_rated = 11e3
+_v_rated = 11
 _v_min = _v_rated * 0.95
 _v_max = _v_rated * 1.05
 
