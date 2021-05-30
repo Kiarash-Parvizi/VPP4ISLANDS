@@ -381,10 +381,10 @@ class Optimizer:
                                 pass
                             # form 9
                             # TODO uncomment later
-                            #self.model.addConstr(
-                            #    dat['V_Rated'][1]*vi['I2'][i0][bp] == expr_form_9_r,
-                            #    'c_form_9_%x_%x_%x_%x'%(w,t,i0,bp)
-                            #)
+                            self.model.addConstr(
+                                dat['V_Rated'][1]*vi['I2'][i0][bp] == expr_form_9_r,
+                                'c_form_9_%x_%x_%x_%x'%(w,t,i0,bp)
+                            )
                             # form 10
                             self.model.addConstr(
                                 vi['P']['+'][i0][bp]+vi['P']['-'][i0][bp]== expr_form_10_r,
@@ -400,8 +400,8 @@ class Optimizer:
                     if nd.trade_compatible:
                         L0 = vi['P']['DA']
                         L1 = vi['Q']['DA']
-                        self.model.addConstr(L0['buy'][i0]-L0['sell'][i0]==0, "c_sest_2_%x_%x_%x"%(w,t,i0))
-                        self.model.addConstr(L1['buy'][i0]-L1['sell'][i0]==0, "c_sest_3_%x_%x_%x"%(w,t,i0))
+                        self.model.addConstr(expr_sest_2_2 + L0['buy'][i0]-L0['sell'][i0]==0, "c_sest_2_%x_%x_%x"%(w,t,i0))
+                        self.model.addConstr(expr_sest_3_2 + L1['buy'][i0]-L1['sell'][i0]==0, "c_sest_3_%x_%x_%x"%(w,t,i0))
                         continue
                     # dg
                     if nd.dg_resources.len() > 0:
