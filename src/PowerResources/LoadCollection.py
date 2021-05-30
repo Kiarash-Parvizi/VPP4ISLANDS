@@ -41,7 +41,7 @@ class LoadColleciton:
         # Flexibility portion of loads
         if key == "alpha_S_flex":
             if self.flex_loads.len() is not 0:
-                return next(iter(self.flex_loads.getItems()))[1].get("alpha_flex") / 100.
+                return next(iter(self.flex_loads.getItems()))[1].get("alpha_flex")
             else:
                 return 0
         
