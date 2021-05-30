@@ -12,7 +12,7 @@ class Optimizer:
         self.vppInterface = vppInterface
         # create gurobi model
         self.model = gp.Model("model1")
-        self.model.params.NonConvex = 2
+        #self.model.params.NonConvex = 2
         # add model variable
         self.NW, self.NT, self.NM = 1, 24, 20
         self.__create_variables()
@@ -72,8 +72,8 @@ class Optimizer:
                     'S': {
                         'delta': {},
                     },
-                    'I': {},
-                    'V': {},
+                    'I2': {},
+                    'V2': {},
                 }
                 for t in range(1, NT+1)
             }
@@ -104,15 +104,15 @@ class Optimizer:
                 v_DG    = L0['v']['DG']
                 U_DG    = L0['U']['DG']
                 SOE_ES  = L0['SOE']['ES']
-                I       = L0['I']
-                V       = L0['V']
+                I2      = L0['I2']
+                V2      = L0['V2']
                 for nId, nd in vppBoxNodes:
                     # directed edges
                     adj_nodes = self.vppInterface.getAdjNodeIds(nId, VppBoxNode)
                     if len(adj_nodes) != 0:
                         P_plus[nId] = {}
                         Q_plus[nId] = {}
-                        I[nId]      = {}
+                        I2[nId]      = {}
                         P_minus[nId] = {}
                         Q_minus[nId] = {}
                         P_delta[nId] = {}
@@ -130,8 +130,8 @@ class Optimizer:
                                     name='%x_%x_Q_+_%x_%x'%(w,t,nId,nId_p))
                             Q_minus[nId][nId_p] = self.model.addVar(vtype= GRB.CONTINUOUS,
                                     name='%x_%x_Q_-_%x_%x'%(w,t,nId,nId_p))
-                            I[nId][nId_p] = self.model.addVar(vtype= GRB.CONTINUOUS,
-                                    name='%x_%x_I_%x_%x'%(w,t,nId,nId_p))
+                            I2[nId][nId_p] = self.model.addVar(vtype= GRB.CONTINUOUS,
+                                    name='%x_%x_I2_%x_%x'%(w,t,nId,nId_p))
                             # m:
                             for m in range(1, NM+1):
                                 P_delta[nId][nId_p][m] = self.model.addVar(vtype= GRB.CONTINUOUS,
@@ -141,7 +141,7 @@ class Optimizer:
                                 S_delta[nId][nId_p] = self.model.addVar(vtype= GRB.CONTINUOUS,
                                     name='%x_%x_S_delta_%x_%x'%(w,t,nId,nId_p))
                     # bus vars
-                    V[nId] = self.model.addVar(vtype= GRB.CONTINUOUS,
+                    V2[nId] = self.model.addVar(vtype= GRB.CONTINUOUS,
                             name='%x_%x_V_buy_%x'%(w,t,nId))
                     # tradeNodes
                     if nd.trade_compatible:
@@ -226,7 +226,8 @@ class Optimizer:
                     SOE_ES[nId] = {}
                     for i, _ in nd.es_resources.getItems():
                         SOE_ES[nId][i] = 0
-        #
+        # model update
+        self.model.update()
 
     # uses the VppInterface to retrieve input values
     def __fetch_data(self):
@@ -270,6 +271,7 @@ class Optimizer:
         for i in range(1, len(ls)):
             ob += ls[i][1] * ls[i][0]
         self.model.setObjective(ob, GRB.MINIMIZE)
+        print('-'*10,'\nObj is set to : ', ob)
 
     def __set_constraints(self):
         self.__rem_constraints()
@@ -319,17 +321,80 @@ class Optimizer:
                             # form 6
                             #print(': ', dat['R'][i0][bp])
                             #print(': ', dat['X'][i0][bp])
-                            #self.model.addConstr(
-                            #    vi['V'][i0]**2 - vi['V'][bp]**2 -
-                            #    dat['Z'][i0][bp]**2 * vi['I'][i0][bp]**2 -
-                            #    2*dat['R'][i0][bp]*(vi['P']['+'][i0][bp]-vi['P']['-'][i0][bp]) -
-                            #    2*dat['X'][i0][bp]*(vi['Q']['+'][i0][bp]-vi['Q']['-'][i0][bp])==
-                            #    0,
-                            #    "c_form_6_right_%x_%x_%x_%x"%(w,t,i0,bp)
-                            #)
+                            self.model.addConstr(
+                                vi['V2'][i0] - vi['V2'][bp] -
+                                dat['Z'][i0][bp]**2 * vi['I2'][i0][bp] -
+                                2*dat['R'][i0][bp]*(vi['P']['+'][i0][bp]-vi['P']['-'][i0][bp]) -
+                                2*dat['X'][i0][bp]*(vi['Q']['+'][i0][bp]-vi['Q']['-'][i0][bp])==
+                                0,
+                                "c_form_6_right_%x_%x_%x_%x"%(w,t,i0,bp)
+                            )
                             # undirected edges
-                            expr_sest_2_2 -= dat['R'][i0][bp] * vi['I'][i0][bp]*vi['I'][i0][bp]
-                            expr_sest_3_2 -= dat['X'][i0][bp] * vi['I'][i0][bp]*vi['I'][i0][bp]
+                            expr_sest_2_2 -= dat['R'][i0][bp] * vi['I2'][i0][bp]
+                            expr_sest_3_2 -= dat['X'][i0][bp] * vi['I2'][i0][bp]
+                            #
+                            # form 8 left
+                            self.model.addConstr(
+                                vi['I2'][i0][bp] >= 0,
+                                'c_form_8_left_%x_%x_%x_%x'%(w,t,i0,bp)
+                            )
+                            # form 8 right
+                            self.model.addConstr(
+                                vi['I2'][i0][bp] <= dat['I_max'][i0][bp]**2,
+                                'c_form_8_right_%x_%x_%x_%x'%(w,t,i0,bp)
+                            )
+                            # m:
+                            dS = (dat['V_Rated'][1] * dat['I_max'][i0][bp]) / NM
+                            expr_form_9_r, expr_form_10_r, expr_form_11_r = tuple(
+                                gp.LinExpr() for _ in range(3)
+                            )
+                            for m in range(1, NM+1):
+                                # sumations
+                                expr_form_9_r += (
+                                    (2*m-1) * dS * (
+                                        vi['P']['delta'][i0][bp][m] +
+                                        vi['Q']['delta'][i0][bp][m]
+                                    )
+                                )
+                                expr_form_10_r += vi['P']['delta'][i0][bp][m]
+                                expr_form_11_r += vi['Q']['delta'][i0][bp][m]
+                                # form 12 left
+                                self.model.addConstr(
+                                    vi['P']['delta'][i0][bp][m] >= 0,
+                                    'c_form_12_left_%x_%x_%x_%x_%x'%(w,t,i0,bp,m)
+                                )
+                                # form 12 right
+                                self.model.addConstr(
+                                    vi['P']['delta'][i0][bp][m] <= dS,
+                                    'c_form_12_right_%x_%x_%x_%x_%x'%(w,t,i0,bp,m)
+                                )
+                                # form 13 left
+                                self.model.addConstr(
+                                    vi['Q']['delta'][i0][bp][m] >= 0,
+                                    'c_form_13_left_%x_%x_%x_%x_%x'%(w,t,i0,bp,m)
+                                )
+                                # form 13 right
+                                self.model.addConstr(
+                                    vi['Q']['delta'][i0][bp][m] <= dS,
+                                    'c_form_13_right_%x_%x_%x_%x_%x'%(w,t,i0,bp,m)
+                                )
+                                pass
+                            # form 9
+                            # TODO uncomment later
+                            #self.model.addConstr(
+                            #    dat['V_Rated'][1]*vi['I2'][i0][bp] == expr_form_9_r,
+                            #    'c_form_9_%x_%x_%x_%x'%(w,t,i0,bp)
+                            #)
+                            # form 10
+                            self.model.addConstr(
+                                vi['P']['+'][i0][bp]+vi['P']['-'][i0][bp]== expr_form_10_r,
+                                'c_form_10_%x_%x_%x_%x'%(w,t,i0,bp)
+                            )
+                            # form 11
+                            self.model.addConstr(
+                                vi['Q']['+'][i0][bp]+vi['Q']['-'][i0][bp]== expr_form_11_r,
+                                'c_form_11_%x_%x_%x_%x'%(w,t,i0,bp)
+                            )
                             pass
                     # tradeNodes
                     if nd.trade_compatible:
@@ -517,6 +582,18 @@ class Optimizer:
                         dat['LR_S_drop'][i0],
                         'c_sest_14_%x_%x_%x'%(w,t,i0)
                     )
+                    # form 7 left
+                    self.model.addConstr(
+                        vi['V2'][i0] >=
+                        dat['V_min'][i0]**2,
+                        'c_form_7_left_%x_%x_%x'%(w,t,i0)
+                    )
+                    # form 7 right
+                    self.model.addConstr(
+                        vi['V2'][i0] <=
+                        dat['V_max'][i0]**2,
+                        'c_form_7_right_%x_%x_%x'%(w,t,i0)
+                    )
         pass
     
     def set_equations(self):
@@ -557,5 +634,6 @@ class Optimizer:
                 # es
                 if nd.es_resources.len() > 0:
                     for i, _ in nd.es_resources.getItems():
-                        L0['SOE']['ES'][nId][i] = L1['SOE']['ES'][nId][i]
+                        #L0['SOE']['ES'][nId][i] = L1['SOE']['ES'][nId][i]
+                        L0['SOE']['ES'][nId][i] = 0
         self.vppInterface.distribute_optimizerOutput(self.var, self.NW, self.NT, self.NM)
