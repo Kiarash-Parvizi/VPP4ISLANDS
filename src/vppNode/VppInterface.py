@@ -47,7 +47,8 @@ class VppInterface:
             'LR_S_pickup': {},
             'LR_S_drop': {},
             'V_Rated': {},
-            'I_max': {}, 'R': {}, 'X': {}, 'Z': {}
+            'I_max': {}, 'R': {}, 'X': {}, 'Z': {},
+            'V_max': {}, 'V_min': {},
         }
         vppBoxNodes = self.getVppBoxNodes()
         edgeIds = self.getEdgeIds()
@@ -86,6 +87,9 @@ class VppInterface:
                     dat['X'][i0][bp] = lineProps.get('X')
                     dat['Z'][i0][bp] = lineProps.get('Z')
                     pass
+            # bus only
+            dat['V_max'][i0] = box.get('V_max')
+            dat['V_min'][i0] = box.get('V_min')
             # load container data
             # TODO change this
             if box.trade_compatible:
