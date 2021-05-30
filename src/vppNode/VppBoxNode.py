@@ -91,6 +91,8 @@ class VppBoxNode(Junction):
         if self.trade_compatible:
             if key == "V_Rated":
                 return self.v_rated
+            else:
+                raise KeyError("there is no such key for BoxNode")
         else:
             raise KeyError("there is no such key for BoxNode")
 

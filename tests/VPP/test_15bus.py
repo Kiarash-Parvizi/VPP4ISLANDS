@@ -28,7 +28,7 @@ nodes: Dict[int, VppBoxNode] = {
 
 for i in range(1, NNodes + 1):
     if i not in nodes.keys():
-        nodes[i] = VppBoxNode(node_id=i)
+        nodes[i] = VppBoxNode(node_id=i, v_rated=_v_rated, v_min=_v_min, v_max=_v_max)
 
 for _, node in nodes.items():
     if isinstance(node, VppBoxNode):
