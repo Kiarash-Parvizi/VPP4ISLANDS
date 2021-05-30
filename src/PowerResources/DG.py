@@ -68,15 +68,15 @@ class DG(Resource):
         # DG No.,Node_id,P_max,P_min,Q_max,Q_min,Rup,Rdn,MUT,MDT,Cost,SUC,SDC
         number = item['DG No.']
         node_id = item['Node_id']
-        p_max = item['P_max'] * 1e3
-        p_min = item['P_min'] * 1e3
-        q_max = item['Q_max'] * 1e3
-        q_min = item['Q_min'] * 1e3
-        rup = item['Rup'] * 1e3
-        rdn = item['Rdn'] * 1e3
+        p_max = item['P_max']
+        p_min = item['P_min']
+        q_max = item['Q_max']
+        q_min = item['Q_min']
+        rup = item['Rup']
+        rdn = item['Rdn']
         mut = item['MUT']
         mdt = item['MDT']
-        cost = item['Cost'] / 1e3
+        cost = item['Cost']
         suc = item['SUC']
         sdc = item['SDC']
 
@@ -86,15 +86,15 @@ class DG(Resource):
     def update_params_by_json(self, item: dict):
         self.number = item['DG No.']
         self.node_id = item['Node_id']
-        self.p_max = item['P_max'] * 1e3
-        self.p_min = item['P_min'] * 1e3
-        self.q_max = item['Q_max'] * 1e3
-        self.q_min = item['Q_min'] * 1e3
-        self.rup = item['Rup'] * 1e3
-        self.rdn = item['Rdn'] * 1e3
+        self.p_max = item['P_max']
+        self.p_min = item['P_min']
+        self.q_max = item['Q_max']
+        self.q_min = item['Q_min']
+        self.rup = item['Rup']
+        self.rdn = item['Rdn']
         self.mut = item['MUT']
         self.mdt = item['MDT']
-        self.cost = item['Cost'] / 1e3
+        self.cost = item['Cost']
         self.suc = item['SUC']
         self.sdc = item['SDC']
 

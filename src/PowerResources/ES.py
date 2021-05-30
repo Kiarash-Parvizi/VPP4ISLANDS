@@ -57,9 +57,9 @@ class ES(Resource):
     def get_instance_by_json(item: dict):
         number = item['ES No.']
         node_id = item['Node_id']
-        p_max_charge = item['P_charge'] * 1e3 
-        p_max_discharge = item['P_discharge'] * 1e3
-        energy_capacity = item['Energy Capacity'] * 1e3
+        p_max_charge = item['P_charge'] 
+        p_max_discharge = item['P_discharge']
+        energy_capacity = item['Energy Capacity']
         soe_min = item['SOE_min'] / 100
         soe_max = item['SOE_max'] / 100
         efficiency = item['Efficiency'] / 100
@@ -72,9 +72,9 @@ class ES(Resource):
     def update_params_by_json(self, item: dict) -> None:
         self.number = item['ES No.']
         self.node_id = item['Node_id']
-        self.p_max_charge = item['P_charge'] * 1e3 
-        self.p_max_discharge = item['P_discharge'] * 1e3
-        self.energy_capacity = item['Energy Capacity'] * 1e3
+        self.p_max_charge = item['P_charge']
+        self.p_max_discharge = item['P_discharge']
+        self.energy_capacity = item['Energy Capacity']
         self.soe_min = item['SOE_min'] / 100
         self.soe_max = item['SOE_max'] / 100
         self.efficiency = item['Efficiency'] / 100

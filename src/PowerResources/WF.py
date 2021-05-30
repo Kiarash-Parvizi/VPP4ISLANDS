@@ -32,14 +32,14 @@ class WF (Resource):
     def get_instance_by_json(item: dict):
         number = item['WF No.']
         node_id = item['Node_id']
-        p_max = item['P_max'] * 1e3
+        p_max = item['P_max']
 
         return WF(node_id=node_id, number=number, p_max=p_max)
 
     def update_params_by_json(self, item: dict) -> None:
         self.number = item['WF No.']
         self.node_id = item['Node_id']
-        self.p_max = item['P_max'] * 1e3
+        self.p_max = item['P_max']
 
     def to_dict(self) -> dict:
         return self.__dict__

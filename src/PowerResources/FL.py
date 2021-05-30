@@ -51,9 +51,9 @@ class FL(Resource):
         number = item['FL No.']
         node_id = item['Node_id']
         alfa = item['Alfa'] / 100
-        lr_pickup = item['LR_pickup'] * 1e3
-        lr_drop = item['LR_drop'] * 1e3
-        inc = item['INC'] / 1e3
+        lr_pickup = item['LR_pickup']
+        lr_drop = item['LR_drop']
+        inc = item['INC']
 
         return FL(node_id=node_id, number=number, alfa=alfa, lr_pickup=lr_pickup, lr_drop=lr_drop, inc=inc)
 
@@ -61,9 +61,9 @@ class FL(Resource):
         self.number = item['FL No.']
         self.node_id = item['Node_id']
         self.alfa = item['Alfa'] / 100
-        self.lr_pickup = item['LR_pickup'] * 1e3
-        self.lr_drop = item['LR_drop'] * 1e3
-        self.inc = item['INC'] / 1e3
+        self.lr_pickup = item['LR_pickup']
+        self.lr_drop = item['LR_drop']
+        self.inc = item['INC']
 
     def to_dict(self) -> dict:
         return self.__dict__
