@@ -1,4 +1,5 @@
 from typing import Tuple
+import math
 
 class LineProps:
     # instance variables
@@ -34,7 +35,7 @@ class LineProps:
         if key == "X":
             return self.x
         if key == "Z":
-            return self.r**2 + self.x**2
+            return math.sqrt(self.r**2 + self.x**2)
         if key == "I_max":
             return self.i_max
         raise KeyError("there is no such key in LineProps")
