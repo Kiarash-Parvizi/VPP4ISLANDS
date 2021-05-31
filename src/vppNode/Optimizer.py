@@ -481,7 +481,7 @@ class Optimizer:
                             for tp in range(t+1, t+int(dat['MDT'][i0][i1])+1):
                                 if tp > NT: break
                                 vc = var[w][tp]
-                                expr_sest_10 += (vc['U']['DG'][i0][i1])
+                                expr_sest_11 += (vc['U']['DG'][i0][i1])
                             # sest 10
                             self.model.addConstr(
                                 expr_sest_10 <= dat['MUT'][i0][i1],
@@ -549,8 +549,8 @@ class Optimizer:
                             expr_sest_2_2 += dat['P_Wind'][i0][i1][w][t]
                             pass
                     # load
-                    expr_sest_2_2 -= dat['P_S_L'][i0][t] - vi['P']['S']['flex'][i0]
-                    expr_sest_3_2 -= dat['Q_S_L'][i0][t] - vi['Q']['S']['flex'][i0]
+                    expr_sest_2_2 -= dat['P_S_L'][i0][t]# - vi['P']['S']['flex'][i0]
+                    expr_sest_3_2 -= dat['Q_S_L'][i0][t]# - vi['Q']['S']['flex'][i0]
                     # set constr for every bus
                     # sets 2
                     self.model.addConstr(expr_sest_2_2==0, "c_sest_2_2_%x_%x_%x"%(w,t,i0))
@@ -568,6 +568,9 @@ class Optimizer:
                         dat['P_S_L'][i0][t],
                         'c_sest_12_right_%x_%x_%x'%(w,t,i0)
                     )
+                    print(vi['P']['S']['flex'][i0] <=
+                        dat['alpha_S_flex'][i0] *
+                        dat['P_S_L'][i0][t])
                     # sest 13
                     self.model.addConstr(
                         vi['P']['S']['flex'][i0] -
