@@ -8,7 +8,7 @@ class Forecaster:
     """
 
     def __init__(self, node_id: int = None) -> None:
-        self.pf = 0.6197
+        self.pf = 0.85
         self.node_id = node_id
         self.forecaster_connector = ForecasterAPI(self.node_id)
 
