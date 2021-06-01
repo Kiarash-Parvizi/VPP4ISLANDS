@@ -142,7 +142,7 @@ class Optimizer:
                                     name='%x_%x_S_delta_%x_%x'%(w,t,nId,nId_p))
                     # bus vars
                     V2[nId] = self.model.addVar(vtype= GRB.CONTINUOUS,
-                            name='%x_%x_V_buy_%x'%(w,t,nId))
+                            name='%x_%x_V2_%x'%(w,t,nId))
                     # tradeNodes
                     if nd.trade_compatible:
                         P_DA['buy'][nId] = self.model.addVar(vtype= GRB.CONTINUOUS,
@@ -271,7 +271,7 @@ class Optimizer:
         for i in range(1, len(ls)):
             ob += ls[i][1] * ls[i][0]
         self.model.setObjective(ob, GRB.MINIMIZE)
-        print('-'*10,'\nObj is set to : ', ob)
+        #print('-'*10,'\nObj is set to : ', ob)
 
     def __set_constraints(self):
         self.__rem_constraints()
@@ -309,12 +309,12 @@ class Optimizer:
                             )
                             # form 5 left
                             self.model.addConstr(
-                                vi['Q']['+'][i0][bp]+vi['P']['-'][i0][bp] >= 0,
+                                vi['Q']['+'][i0][bp]+vi['Q']['-'][i0][bp] >= 0,
                                 "c_form_5_left_%x_%x_%x_%x"%(w,t,i0,bp)
                             )
                             # form 5 right
                             self.model.addConstr(
-                                vi['Q']['+'][i0][bp]+vi['P']['-'][i0][bp] <=
+                                vi['Q']['+'][i0][bp]+vi['Q']['-'][i0][bp] <=
                                 dat['V_Rated'][1] * dat['I_max'][i0][bp],
                                 "c_form_5_right_%x_%x_%x_%x"%(w,t,i0,bp)
                             )
@@ -568,9 +568,6 @@ class Optimizer:
                         dat['P_S_L'][i0][t],
                         'c_sest_12_right_%x_%x_%x'%(w,t,i0)
                     )
-                    print(vi['P']['S']['flex'][i0] <=
-                        dat['alpha_S_flex'][i0] *
-                        dat['P_S_L'][i0][t])
                     # sest 13
                     self.model.addConstr(
                         vi['P']['S']['flex'][i0] -
