@@ -166,11 +166,11 @@ class Optimizer:
                                 name='%x_%x_P_DG_%x_%x'%(w,t,nId,i))
                             Q_DG[nId][i] = self.model.addVar(vtype= GRB.CONTINUOUS,
                                 name='%x_%x_Q_DG_%x_%x'%(w,t,nId,i))
-                            v_DG['SU'][nId][i] = self.model.addVar(vtype= GRB.CONTINUOUS,
+                            v_DG['SU'][nId][i] = self.model.addVar(vtype= GRB.BINARY,
                                 name='%x_%x_v_DG_SU_%x_%x'%(w,t,nId,i))
-                            v_DG['SD'][nId][i] = self.model.addVar(vtype= GRB.CONTINUOUS,
+                            v_DG['SD'][nId][i] = self.model.addVar(vtype= GRB.BINARY,
                                 name='%x_%x_v_DG_SD_%x_%x'%(w,t,nId,i))
-                            U_DG[nId][i] = self.model.addVar(vtype= GRB.CONTINUOUS,
+                            U_DG[nId][i] = self.model.addVar(vtype= GRB.BINARY,
                                     name='%x_%x_U_DG_%x_%x'%(w,t,nId,i))
                     # es
                     if nd.es_resources.len() > 0:
@@ -340,7 +340,7 @@ class Optimizer:
                             )
                             # form 8 right
                             self.model.addConstr(
-                                vi['I2'][i0][bp] <= dat['I_max'][i0][bp]**2,
+                                vi['I2'][i0][bp] <= dat['I_max'][i0][bp]**2 / 1e3,
                                 'c_form_8_right_%x_%x_%x_%x'%(w,t,i0,bp)
                             )
                             # m:
@@ -382,7 +382,7 @@ class Optimizer:
                             # form 9
                             # TODO uncomment later
                             self.model.addConstr(
-                                dat['V_Rated'][1]*vi['I2'][i0][bp] == expr_form_9_r,
+                                dat['V_Rated'][1]*vi['I2'][i0][bp] * 1e3 == expr_form_9_r,
                                 'c_form_9_%x_%x_%x_%x'%(w,t,i0,bp)
                             )
                             # form 10
@@ -583,17 +583,6 @@ class Optimizer:
                         'c_sest_14_%x_%x_%x'%(w,t,i0)
                     )
                     # form 7 left
-                    self.model.addConstr(
-                        vi['V2'][i0] >=
-                        dat['V_min'][i0]**2,
-                        'c_form_7_left_%x_%x_%x'%(w,t,i0)
-                    )
-                    # form 7 right
-                    self.model.addConstr(
-                        vi['V2'][i0] <=
-                        dat['V_max'][i0]**2,
-                        'c_form_7_right_%x_%x_%x'%(w,t,i0)
-                    )
         pass
     
     def set_equations(self):
@@ -611,6 +600,10 @@ class Optimizer:
     # run the optimizer
     def optimize(self) -> None:
         self.model.optimize()
+        #self.model.computeIIS()
+        #self.model.write("model.ilp")
+        #if self.model.get(GRB_IntAttr_Status) != GRB_OPTIMAL:
+        #    raise Exception("Gurobi::optimize error")
     
     # uses the VppInterface to share the optimizer output with other components
     def distribute_results(self):
