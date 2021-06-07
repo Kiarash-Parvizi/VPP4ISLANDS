@@ -93,17 +93,17 @@ class ES(Resource):
         sp_key = key.split("_")
         key = "_".join(sp_key[2: len(sp_key) - 2])
 
-        # Scheduled Charge Power of ESs
+        # Scheduled Charge Power of ESs (kW)
         if key == "P_ChES":
             if w not in self.sp_p_ch_es:
                 self.sp_p_ch_es[w] = {}
             self.sp_p_ch_es[w][t] = value
-        # Scheduled Discharge Power of ESs
+        # Scheduled Discharge Power of ESs (kW)
         elif key == "P_DchES":
             if w not in self.sp_p_dch_es:
                 self.sp_p_dch_es[w] = {}
             self.sp_p_dch_es[w][t] = value
-        # State of the energy level of ESs
+        # State of the energy level of ESs (kWh)
         elif key == "SOE_ES":
             if w not in self.sp_soe_es:
                 self.sp_soe_es[w] = {}
@@ -112,24 +112,25 @@ class ES(Resource):
             raise(KeyError("there is no such key for ES"))
 
     def get(self, key: str):
-        # Maximum charge power of energy storages
+        # Maximum charge power of energy storages (kW)
         if key == "P_ChES_max":
             return self.p_max_charge
-        # Maximum discharge power of energy storages
+        # Maximum discharge power of energy storages (kW)
         if key == "P_DchES_max":
             return self.p_max_discharge
-        # Charge efficiency of energy storages
+        # Charge efficiency of energy storages (%)
         if key == "eta_ChES":
             return self.efficiency_charge
-        # Discharge efficiency of energy storages
+        # Discharge efficiency of energy storages (%)
         if key == "eta_DchES":
             return self.efficiency_discharge
-        # Minimum state of energy level of energy storages
+        # Minimum state of energy level of energy storages (%)
         if key == "SOE_ES_min":
             return self.soe_min
-        # Maximum state of energy level of energy storages
+        # Maximum state of energy level of energy storages (%)
         if key == "SOE_ES_max":
             return self.soe_max
+        # Energy capacity of energy storages (kWh)
         if key == "Energy_Capacity":
             return self.energy_capacity
         raise(KeyError("there is no such key in ES"))

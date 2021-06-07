@@ -109,27 +109,27 @@ class DG(Resource):
         sp_key = key.split("_")
         key = "_".join(sp_key[2: len(sp_key) - 2])
 
-        # Active output power of DG units
+        # Active output power of DG units (kW)
         if key == "P_DG":
             if w not in self.sp_p_dg:
                 self.sp_p_dg[w] = {}
             self.sp_p_dg[w][t] = value
-        # Reactive output power of DG units
+        # Reactive output power of DG units (kW)
         elif key == "Q_DG":
             if w not in self.sp_q_dg:
                 self.sp_q_dg[w] = {}
             self.sp_q_dg[w][t] = value
-        # Start-up binary variables of DG units
+        # Start-up binary variables of DG units (1/0)
         elif key == "v_DG_SU":
             if w not in self.sp_v_dg_su:
                 self.sp_v_dg_su[w] = {}
             self.sp_v_dg_su[w][t] = value
-        # shut-down binary variables of DG units
+        # shut-down binary variables of DG units (1/0)
         elif key == "v_DG_SD":
             if w not in self.sp_v_dg_sd:
                 self.sp_v_dg_sd[w] = {}
             self.sp_v_dg_sd[w][t] = value
-        # Binary variable indicates on/off situation of DG units
+        # Binary variable indicates on/off situation of DG units (1/0)
         elif key == "U_DG":
             if w not in self.sp_u_dg:
                 self.sp_u_dg[w] = {}
@@ -138,37 +138,37 @@ class DG(Resource):
             raise(KeyError("there is no such key for DG"))
 
     def get(self, key: str):
-        # start-up costs of conventional DGs
+        # start-up costs of conventional DGs ($)
         if key == "SUC_DG":
             return self.suc
-        # shut-down costs of conventional DGs
+        # shut-down costs of conventional DGs ($)
         if key == "SDC_DG":
             return self.sdc
-        # Generation cost of DGs
+        # Generation cost of DGs ($/kWh)
         if key == "C_DG":
             return self.cost
-        # Minimum active power of DGs
+        # Minimum active power of DGs (kW)
         if key == "P_DG_min":
             return self.p_min
-        # Maximum active power of DGs
+        # Maximum active power of DGs (kW)
         if key == "P_DG_max":
             return self.p_max
-        # Minimum reactive power of DGs
+        # Minimum reactive power of DGs (kW)
         if key == "Q_DG_min":
             return self.q_min
-        # Maximum reactive power of DGs
+        # Maximum reactive power of DGs (kW)
         if key == "Q_DG_max":
             return self.q_max
-        # Ramp up rates of DGs
+        # Ramp up rates of DGs (kW/h)
         if key == "RU_DG":
             return self.rup
-        # Ramp down rates of DGs
+        # Ramp down rates of DGs (kW/h)
         if key == "RD_DG":
             return self.rdn
-        # Minimum up times of DGs
+        # Minimum up times of DGs (h)
         if key == "MUT":
             return self.mut
-        # Minimum down times of DGs
+        # Minimum down times of DGs (h)
         if key == "MDT":
             return self.mdt
         raise(KeyError("there is no such key for DG"))

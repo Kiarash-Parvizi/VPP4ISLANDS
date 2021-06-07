@@ -17,12 +17,12 @@ class LoadColleciton:
         sp_key = key.split("_")
         key = "_".join(sp_key[2: len(sp_key) - 1])
 
-        # active scheduled power of flexible load
+        # active scheduled power of flexible load (kW)
         if key == "P_S_flex":
             if w not in self.sp_p_flex:
                 self.sp_p_flex[w] = {}
             self.sp_p_flex[w][t] = value
-        # reactive scheduled power of flexible load
+        # reactive scheduled power of flexible load (kW)
         elif key == "Q_S_flex":
             if w not in self.sp_q_flex:
                 self.sp_q_flex[w] = {}
@@ -31,37 +31,38 @@ class LoadColleciton:
             raise (KeyError("there is no such key for FL"))
     
     def get(self, key: str):
-        # Incentive payment to flexible loads
+        # Incentive payment to flexible loads ($/kWh)
         if key == "INC_S":
             if self.flex_loads.len() is not 0:
                 return next(iter(self.flex_loads.getItems()))[1].get("INC")
             else:
                 return 0
         
-        # Flexibility portion of loads
+        # Flexibility portion of loads (%)
         if key == "alpha_S_flex":
             if self.flex_loads.len() is not 0:
                 return next(iter(self.flex_loads.getItems()))[1].get("alpha_flex")
             else:
                 return 0
         
-        # Load pick-up rates
+        # Load pick-up rates (kW/h)
         if key == "LR_S_pickup":
             if self.flex_loads.len() is not 0:
                 return next(iter(self.flex_loads.getItems()))[1].get("LR_pickup")
             else:
                 return 0
         
-        # Load drop rates
+        # Load drop rates (kW/h)
         if key == "LR_S_drop":
             if self.flex_loads.len() is not 0:
                 return next(iter(self.flex_loads.getItems()))[1].get("LR_drop")
             else:
                 return 0
-        
+        # Sum of Active loads (kW)
         if key == "P_S_L":
             return next(iter(self.fixed_loads.getItems()))[1].get("P_L")
         
+        # Sum of Reactivate Loads (kW)
         if key == "Q_S_L":
             return next(iter(self.fixed_loads.getItems()))[1].get("Q_L")
         
