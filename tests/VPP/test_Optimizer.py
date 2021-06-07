@@ -3,6 +3,7 @@ from src.vppNode.Optimizer import Optimizer
 from .test_VppInterface import *
 import pprint
 import os
+from src.Utils.utils import NodeResults
 # import pyperclip
 # from src.Models.Models import VppNodeModel
 
@@ -19,6 +20,8 @@ if __name__ == '__main__':
         os.makedirs(os.path.dirname(outputFileName), exist_ok=True)
         with open(outputFileName, 'w') as fp:
             json.dump(vppNode.to_dict(), fp=fp, indent=4, sort_keys=True)
+            node_results = NodeResults(vppNode)
+            node_results.to_excel()
     else:
         print('ok then')
         # print(data)
