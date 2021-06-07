@@ -142,7 +142,7 @@ class Optimizer:
                                     name='%x_%x_S_delta_%x_%x'%(w,t,nId,nId_p))
                     # bus vars
                     V2[nId] = self.model.addVar(vtype= GRB.CONTINUOUS,
-                            name='%x_%x_V_buy_%x'%(w,t,nId))
+                            name='%x_%x_V2_%x'%(w,t,nId))
                     # tradeNodes
                     if nd.trade_compatible:
                         P_DA['buy'][nId] = self.model.addVar(vtype= GRB.CONTINUOUS,
@@ -166,11 +166,11 @@ class Optimizer:
                                 name='%x_%x_P_DG_%x_%x'%(w,t,nId,i))
                             Q_DG[nId][i] = self.model.addVar(vtype= GRB.CONTINUOUS,
                                 name='%x_%x_Q_DG_%x_%x'%(w,t,nId,i))
-                            v_DG['SU'][nId][i] = self.model.addVar(vtype= GRB.CONTINUOUS,
+                            v_DG['SU'][nId][i] = self.model.addVar(vtype= GRB.BINARY,
                                 name='%x_%x_v_DG_SU_%x_%x'%(w,t,nId,i))
-                            v_DG['SD'][nId][i] = self.model.addVar(vtype= GRB.CONTINUOUS,
+                            v_DG['SD'][nId][i] = self.model.addVar(vtype= GRB.BINARY,
                                 name='%x_%x_v_DG_SD_%x_%x'%(w,t,nId,i))
-                            U_DG[nId][i] = self.model.addVar(vtype= GRB.CONTINUOUS,
+                            U_DG[nId][i] = self.model.addVar(vtype= GRB.BINARY,
                                     name='%x_%x_U_DG_%x_%x'%(w,t,nId,i))
                     # es
                     if nd.es_resources.len() > 0:
@@ -271,7 +271,7 @@ class Optimizer:
         for i in range(1, len(ls)):
             ob += ls[i][1] * ls[i][0]
         self.model.setObjective(ob, GRB.MINIMIZE)
-        print('-'*10,'\nObj is set to : ', ob)
+        #print('-'*10,'\nObj is set to : ', ob)
 
     def __set_constraints(self):
         self.__rem_constraints()
@@ -309,12 +309,12 @@ class Optimizer:
                             )
                             # form 5 left
                             self.model.addConstr(
-                                vi['Q']['+'][i0][bp]+vi['P']['-'][i0][bp] >= 0,
+                                vi['Q']['+'][i0][bp]+vi['Q']['-'][i0][bp] >= 0,
                                 "c_form_5_left_%x_%x_%x_%x"%(w,t,i0,bp)
                             )
                             # form 5 right
                             self.model.addConstr(
-                                vi['Q']['+'][i0][bp]+vi['P']['-'][i0][bp] <=
+                                vi['Q']['+'][i0][bp]+vi['Q']['-'][i0][bp] <=
                                 dat['V_Rated'][1] * dat['I_max'][i0][bp],
                                 "c_form_5_right_%x_%x_%x_%x"%(w,t,i0,bp)
                             )
@@ -340,7 +340,7 @@ class Optimizer:
                             )
                             # form 8 right
                             self.model.addConstr(
-                                vi['I2'][i0][bp] <= dat['I_max'][i0][bp]**2,
+                                vi['I2'][i0][bp] <= dat['I_max'][i0][bp]**2 / 1e3,
                                 'c_form_8_right_%x_%x_%x_%x'%(w,t,i0,bp)
                             )
                             # m:
@@ -381,10 +381,10 @@ class Optimizer:
                                 pass
                             # form 9
                             # TODO uncomment later
-                            #self.model.addConstr(
-                            #    dat['V_Rated'][1]*vi['I2'][i0][bp] == expr_form_9_r,
-                            #    'c_form_9_%x_%x_%x_%x'%(w,t,i0,bp)
-                            #)
+                            self.model.addConstr(
+                                dat['V_Rated'][1]*vi['I2'][i0][bp] * 1e3 == expr_form_9_r,
+                                'c_form_9_%x_%x_%x_%x'%(w,t,i0,bp)
+                            )
                             # form 10
                             self.model.addConstr(
                                 vi['P']['+'][i0][bp]+vi['P']['-'][i0][bp]== expr_form_10_r,
@@ -400,8 +400,8 @@ class Optimizer:
                     if nd.trade_compatible:
                         L0 = vi['P']['DA']
                         L1 = vi['Q']['DA']
-                        self.model.addConstr(L0['buy'][i0]-L0['sell'][i0]==0, "c_sest_2_%x_%x_%x"%(w,t,i0))
-                        self.model.addConstr(L1['buy'][i0]-L1['sell'][i0]==0, "c_sest_3_%x_%x_%x"%(w,t,i0))
+                        self.model.addConstr(expr_sest_2_2 + L0['buy'][i0]-L0['sell'][i0]==0, "c_sest_2_%x_%x_%x"%(w,t,i0))
+                        self.model.addConstr(expr_sest_3_2 + L1['buy'][i0]-L1['sell'][i0]==0, "c_sest_3_%x_%x_%x"%(w,t,i0))
                         continue
                     # dg
                     if nd.dg_resources.len() > 0:
@@ -481,7 +481,7 @@ class Optimizer:
                             for tp in range(t+1, t+int(dat['MDT'][i0][i1])+1):
                                 if tp > NT: break
                                 vc = var[w][tp]
-                                expr_sest_10 += (vc['U']['DG'][i0][i1])
+                                expr_sest_11 += (vc['U']['DG'][i0][i1])
                             # sest 10
                             self.model.addConstr(
                                 expr_sest_10 <= dat['MUT'][i0][i1],
@@ -549,8 +549,8 @@ class Optimizer:
                             expr_sest_2_2 += dat['P_Wind'][i0][i1][w][t]
                             pass
                     # load
-                    expr_sest_2_2 -= dat['P_S_L'][i0][t] - vi['P']['S']['flex'][i0]
-                    expr_sest_3_2 -= dat['Q_S_L'][i0][t] - vi['Q']['S']['flex'][i0]
+                    expr_sest_2_2 -= dat['P_S_L'][i0][t]# - vi['P']['S']['flex'][i0]
+                    expr_sest_3_2 -= dat['Q_S_L'][i0][t]# - vi['Q']['S']['flex'][i0]
                     # set constr for every bus
                     # sets 2
                     self.model.addConstr(expr_sest_2_2==0, "c_sest_2_2_%x_%x_%x"%(w,t,i0))
@@ -583,17 +583,6 @@ class Optimizer:
                         'c_sest_14_%x_%x_%x'%(w,t,i0)
                     )
                     # form 7 left
-                    self.model.addConstr(
-                        vi['V2'][i0] >=
-                        dat['V_min'][i0]**2,
-                        'c_form_7_left_%x_%x_%x'%(w,t,i0)
-                    )
-                    # form 7 right
-                    self.model.addConstr(
-                        vi['V2'][i0] <=
-                        dat['V_max'][i0]**2,
-                        'c_form_7_right_%x_%x_%x'%(w,t,i0)
-                    )
         pass
     
     def set_equations(self):
@@ -611,6 +600,10 @@ class Optimizer:
     # run the optimizer
     def optimize(self) -> None:
         self.model.optimize()
+        #self.model.computeIIS()
+        #self.model.write("model.ilp")
+        #if self.model.get(GRB_IntAttr_Status) != GRB_OPTIMAL:
+        #    raise Exception("Gurobi::optimize error")
     
     # uses the VppInterface to share the optimizer output with other components
     def distribute_results(self):
