@@ -21,8 +21,8 @@ class Mapper(Generic[T]):
 
     def is_empty(self):
         if self.mp:
-            return True
-        return False
+            return False
+        return True
     
     def rem(self, id: int) -> bool:
         if id in self.mp:
