@@ -1,61 +1,62 @@
 Sest2 pdf:
-vars:
-P_DA_buy
-P_DA_sell
-Q_DA_buy
-Q_DA_sell
-P_DG
-Q_DG
-v_DG_SU
-v_DG_SD
-U_DG
-P_ChES
-P_DchES
-SOE_ES
-P_S_flex
-Q_S_flex
---
-parameters:
-SUC_DG
-SDC_DG
-rho
-lambda_DA
-C_DG
-INC_S
-P_PV
-P_Wind
-P_S_L
-Q_S_L
-P_DG_min
-P_DG_max
-Q_DG_min
-Q_DG_max
-RU_DG
-RD_DG
-MUT
-MDT
-alpha_S_flex
-LR_S_pickup
-LR_S_drop
-P_ChES_max
-P_DchES_max
-eta_ES
-SOE_ES_min
-SOE_ES_max
-SOE_init (for each ess)
-# TODO change name
-capacity (for each ess)
+vars            Class           Unit    Description  
+P_DA_buy 	    VppBoxNode      kW      buying power in day-ahead energy market 
+P_DA_sell 	    VppBoxNode      kW      selling power in day-ahead energy market 
+Q_DA_buy 	    VppBoxNode      ?       
+Q_DA_sell 	    VppBoxNode      ?
+P_DG            DG              kW      Active output power of DG units
+Q_DG            DG              kW      Reactive output power of DG units
+v_DG_SU         DG              1/0     Start-up binary variables of DG units
+v_DG_SD         DG              1/0     shut-down binary variables of DG units
+U_DG            DG              1/0     Binary variable indicates on/off situation of DG units
+P_ChES          ES              kW      Scheduled Charge Power of ESs
+P_DchES         ES              kW      Scheduled Discharge Power of ESs
+SOE_ES          ES              kWh     State of the energy level of ESs
+P_S_flex        LoadCollection  kW      active scheduled power of flexible load
+Q_S_flex        LoadCollection  kW      reactive scheduled power of flexible load
+-- 
+parameters      Class           Unit    Description
+SUC_DG          DG              $       start-up costs of conventional DGs
+SDC_DG          DG              $       shut-down costs of conventional DGs
+rho             Forecaster      CONS
+lambda_DA       Forecaster      $/kWh
+C_DG            DG              $/kWh   Generation cost of DGs
+INC_S           LoadCollection  $/kWh   Incentive payment to flexible loads
+P_PV            PV              kW      PV power generation
+P_Wind          WF              kW      Wind farm Power generator
+P_S_L           LoadCollection  kW      Sum of Active loads
+Q_S_L           LoadCollection  kW      Sum of Reactivate Loads
+P_DG_min        DG              kW      Minimum active power of DGs
+P_DG_max        DG              kW      Maximum active power of DGs
+Q_DG_min        DG              kW      Minimum reactive power of DGs
+Q_DG_max        DG              kW      Maximum reactive power of DGs
+RU_DG           DG              kW/h    Ramp up rates of DGs
+RD_DG           DG              kW/h    Ramp down rates of DGs
+MUT             DG              h       Minimum up times of DGs
+MDT             DG              h       Minimum down times of DGs
+alpha_S_flex    LoadCollection  %       Flexibility portion of loads
+LR_S_pickup     LoadCollection  kW/h    Load pick-up rates
+LR_S_drop       LoadCollection  kW/h    Load drop rates
+P_ChES_max      ES              kW      Maximum charge power of energy storages
+P_DchES_max     ES              kW      Maximum discharge power of energy storages
+eta_ChES        ES              %       Charge efficiency of energy storages
+eta_DchES       ES              %       Discharge efficiency of energy storages
+SOE_ES_min      ES              %       Minimum state of energy level of energy storages
+SOE_ES_max      ES              %       Maximum state of energy level of energy storages
+# TODO: SOE_init never used in get method
+SOE_init        ES              %       intial state of charge
+Energy_Capacity ES              kWh     Energy capacity of energy storages
 
 Formulation pdf:
 parameters:
-V_Rated (b)
-V_min (b)
-V_max (b)
-X (dEdge)
-R (dEdge)
-I (dEdge)
-Z (dEdge)
-I_max
+V_Rated         VppBoxNode      kV
+V_min           VppBoxNode      kV
+V_max           VppBoxNode      kV
+X               LineProps       ohm
+R               LineProps       ohm
+I               LineProps       A
+Z               LineProps       ohm
+I_max           LineProps       A
 --
 V_Rated = 11000
 V2_Rated = V_Rated**2

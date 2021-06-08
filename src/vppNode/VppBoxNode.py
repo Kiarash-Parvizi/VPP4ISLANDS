@@ -100,13 +100,13 @@ class VppBoxNode(Junction):
         sp_key = key.split("_")
         key = "_".join(sp_key[2: len(sp_key) - 1])
 
-        # buying power in day-ahead energy market
         if self.trade_compatible:
+            # buying power in day-ahead energy market (kW)
             if key == "P_DA_buy":
                 if w not in self.sp_p_da_buy:
                     self.sp_p_da_buy[w] = {}
                 self.sp_p_da_buy[w][t] = value
-            # selling power in day-ahead energy market
+            # selling power in day-ahead energy market (kW)
             elif key == "P_DA_sell":
                 if w not in self.sp_p_da_sell:
                     self.sp_p_da_sell[w] = {}

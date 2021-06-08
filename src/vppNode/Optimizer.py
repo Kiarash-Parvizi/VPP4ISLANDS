@@ -14,7 +14,7 @@ class Optimizer:
         self.model = gp.Model("model1")
         #self.model.params.NonConvex = 2
         # add model variable
-        self.NW, self.NT, self.NM = 1, 24, 20
+        self.NW, self.NT, self.NM = 1, 24, 10
         self.__create_variables()
         # set equations
         self.set_equations()
