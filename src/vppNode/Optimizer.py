@@ -630,3 +630,4 @@ class Optimizer:
                         #L0['SOE']['ES'][nId][i] = L1['SOE']['ES'][nId][i]
                         L0['SOE']['ES'][nId][i] = 0
         self.vppInterface.distribute_optimizerOutput(self.var, self.NW, self.NT, self.NM)
+        self.vppInterface.set_OFunc_Value([self.model.getObjective().getValue()])

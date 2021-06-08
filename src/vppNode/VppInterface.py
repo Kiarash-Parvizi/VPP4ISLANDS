@@ -249,5 +249,8 @@ class VppInterface:
                             pass
         # end of distribute_optimizerOutput
 
+    def set_OFunc_Value(self, val: List[float]) -> None:
+        self.vppNode.OFV = val
+
     def get_graph_asJson(self):
         return json.dumps(self.vppNode.to_dict())

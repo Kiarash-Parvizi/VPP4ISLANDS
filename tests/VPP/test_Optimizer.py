@@ -26,3 +26,5 @@ if __name__ == '__main__':
     
     # model = VppNodeModel()
     # model.insert_vppnode(vppNode)
+
+print('\nOFV: ', vppNode.OFV)

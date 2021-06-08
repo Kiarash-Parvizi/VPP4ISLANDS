@@ -12,10 +12,12 @@ class VppNode:
     # instance variables
     # edgeMp: Mapper[Edge]
     # junctionMp: Mapper[Junction]
+    # OFV : Objective-Function value
     ###
     def __init__(self) -> None:
         self.edgeMp = Mapper[Edge]()
         self.junctionMp = Mapper[Junction]()
+        self.OFV = []
 
     # adds a new junction to the graph
     # pure instances of junction class are not allowed 
