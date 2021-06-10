@@ -41,8 +41,8 @@ P_ChES_max      ES              kW      Maximum charge power of energy storages
 P_DchES_max     ES              kW      Maximum discharge power of energy storages
 eta_ChES        ES              %       Charge efficiency of energy storages
 eta_DchES       ES              %       Discharge efficiency of energy storages
-SOE_ES_min      ES              %       Minimum state of energy level of energy storages
-SOE_ES_max      ES              %       Maximum state of energy level of energy storages
+SOE_ES_min      ES              kW      Minimum state of energy level of energy storages
+SOE_ES_max      ES              kW      Maximum state of energy level of energy storages
 # TODO: SOE_init never used in get method
 SOE_init        ES              %       intial state of charge
 Energy_Capacity ES              kWh     Energy capacity of energy storages
