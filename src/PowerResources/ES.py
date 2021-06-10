@@ -130,6 +130,9 @@ class ES(Resource):
         # Maximum state of energy level of energy storages (kWh)
         if key == "SOE_ES_max":
             return self.soe_max * self.energy_capacity
+        # initail value for SOE (kWh)
+        if key == "SOE_ES_init":
+            return self.soe_initial * self.energy_capacity
         # Energy capacity of energy storages (kWh)
         if key == "Energy_Capacity":
             return self.energy_capacity
