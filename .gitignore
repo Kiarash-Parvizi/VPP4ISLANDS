@@ -152,3 +152,7 @@ db.sqlite3
 media
 
 .idea
+
+output/
+*.lp
+*.ilp
