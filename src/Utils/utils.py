@@ -12,6 +12,7 @@ class NodeResults:
         self.dir_u_dg = 'output/u_dg.xlsx'
         self.dir_v_dg_su = 'output/v_dg_su.xlsx'
         self.dir_v_dg_sd = 'output/v_dg_sd.xlsx'
+        self.dir_opt_res = 'output/ofv.xlsx'
 
     def to_excel(self):
         sb_box: VppBoxNode = self.node.get_junction(1)
@@ -52,9 +53,11 @@ class NodeResults:
         df_u_dg = pd.DataFrame(u_dg_row, columns=u_dg_cols[0], index=indecies)
         df_v_dg_su = pd.DataFrame(v_dg_su_row, columns=v_dg_su_cols[0], index=indecies)
         df_v_dg_sd = pd.DataFrame(v_dg_sd_row, columns=v_dg_sd_cols[0], index=indecies)
+        df_ofv = pd.DataFrame(self.node.OFV, columns=list(range(1, len(self.node.OFV)+1)), index=[0])
 
         df_buy.to_excel(self.dir_sp_p_da_buy)
         df_sell.to_excel(self.dir_sp_p_da_sell)
         df_u_dg.to_excel(self.dir_u_dg)
         df_v_dg_su.to_excel(self.dir_v_dg_su)
         df_v_dg_sd.to_excel(self.dir_v_dg_sd)
+        df_ofv.to_excel(self.dir_opt_res)
