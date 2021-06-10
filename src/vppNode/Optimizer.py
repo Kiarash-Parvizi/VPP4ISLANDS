@@ -465,33 +465,36 @@ class Optimizer:
                                 dat['RD_DG'][i0][i1],
                                 'c_sest_9_%x_%x_%x_%x'%(w,t,i0,i1)
                             )
-                            # sigma over future times
-                            expr_sest_10 = gp.LinExpr(dat['MUT'][i0][i1] * (
-                                vi['U']['DG'][i0][i1] -
-                                vp['U']['DG'][i0][i1]))
-                            expr_sest_11 = gp.LinExpr(dat['MDT'][i0][i1] * (
-                                vp['U']['DG'][i0][i1] -
-                                vi['U']['DG'][i0][i1]))
-                            # t+1 to MUT
-                            for tp in range(t+1, t+int(dat['MUT'][i0][i1])+1):
-                                if tp > NT: break
-                                vc = var[w][tp]
-                                expr_sest_10 += (1-vc['U']['DG'][i0][i1])
-                            # t+1 to MDT
-                            for tp in range(t+1, t+int(dat['MDT'][i0][i1])+1):
-                                if tp > NT: break
-                                vc = var[w][tp]
-                                expr_sest_11 += (vc['U']['DG'][i0][i1])
-                            # sest 10
-                            self.model.addConstr(
-                                expr_sest_10 <= dat['MUT'][i0][i1],
-                                'c_sest_10_%x_%x_%x_%x'%(w,t,i0,i1)
-                            )
-                            # sest 11
-                            self.model.addConstr(
-                                expr_sest_11 <= dat['MDT'][i0][i1],
-                                'c_sest_11_%x_%x_%x_%x'%(w,t,i0,i1)
-                            )
+                            if t <= NT - dat['MUT'][i0][i1]:
+                                # sigma over future times
+                                expr_sest_10 = gp.LinExpr(dat['MUT'][i0][i1] * (
+                                    vi['U']['DG'][i0][i1] -
+                                    vp['U']['DG'][i0][i1]))
+                                # t+1 to MUT
+                                for tp in range(t+1, t+int(dat['MUT'][i0][i1])+1):
+                                    if tp > NT: break
+                                    vc = var[w][tp]
+                                    expr_sest_10 += (1-vc['U']['DG'][i0][i1])
+                                # sest 10
+                                self.model.addConstr(
+                                    expr_sest_10 <= dat['MUT'][i0][i1],
+                                    'c_sest_10_%x_%x_%x_%x'%(w,t,i0,i1)
+                                )
+                            if t <= NT - dat['MDT'][i0][i1]:
+                                # sigma over future times
+                                expr_sest_11 = gp.LinExpr(dat['MDT'][i0][i1] * (
+                                    vp['U']['DG'][i0][i1] -
+                                    vi['U']['DG'][i0][i1]))
+                                # t+1 to MDT
+                                for tp in range(t+1, t+int(dat['MDT'][i0][i1])+1):
+                                    if tp > NT: break
+                                    vc = var[w][tp]
+                                    expr_sest_11 += (vc['U']['DG'][i0][i1])
+                                # sest 11
+                                self.model.addConstr(
+                                    expr_sest_11 <= dat['MDT'][i0][i1],
+                                    'c_sest_11_%x_%x_%x_%x'%(w,t,i0,i1)
+                                )
                     # pv
                     if nd.pv_resources.len() > 0:
                         for i1, _ in nd.pv_resources.getItems():
@@ -542,6 +545,9 @@ class Optimizer:
                                 dat['SOE_ES_max'][i0][i1],
                                 'c_sest_18_right_%x_%x_%x_%x'%(w,t,i0,i1)
                             )
+                            if t == NT:
+                                # sest 18 plus
+                                vi['SOE']['ES'][i0][i1] >= dat['SOE_ES_init'][i0][i1]
                             pass
                     # wf
                     if nd.wf_resources.len() > 0:
@@ -583,6 +589,17 @@ class Optimizer:
                         'c_sest_14_%x_%x_%x'%(w,t,i0)
                     )
                     # form 7 left
+                    #self.model.addConstr(
+                    #    vi['V2'][i0] >=
+                    #    dat['V_min'][i0]**2,
+                    #    'c_form_7_left_%x_%x_%x'%(w,t,i0)
+                    #)
+                    ## form 7 right
+                    #self.model.addConstr(
+                    #    vi['V2'][i0] <=
+                    #    dat['V_max'][i0]**2,
+                    #    'c_form_7_right_%x_%x_%x'%(w,t,i0)
+                    #)
         pass
     
     def set_equations(self):
@@ -628,6 +645,6 @@ class Optimizer:
                 if nd.es_resources.len() > 0:
                     for i, _ in nd.es_resources.getItems():
                         #L0['SOE']['ES'][nId][i] = L1['SOE']['ES'][nId][i]
-                        L0['SOE']['ES'][nId][i] = 0
+                        L0['SOE']['ES'][nId][i] = self.dat['SOE_ES_init'][nId][i]
         self.vppInterface.distribute_optimizerOutput(self.var, self.NW, self.NT, self.NM)
         self.vppInterface.set_OFunc_Value([self.model.getObjective().getValue()])

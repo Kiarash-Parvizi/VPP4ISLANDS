@@ -41,6 +41,7 @@ class VppInterface:
             'P_ChES_max': {},
             'P_DchES_max': {},
             'SOE_ES_min': {},
+            'SOE_ES_init': {},
             'SOE_ES_max': {},
             'INC_S': {},
             'alpha_S_flex': {},
@@ -69,6 +70,7 @@ class VppInterface:
             dat['P_ChES_max'][i0] = {} 
             dat['P_DchES_max'][i0]= {}
             dat['SOE_ES_min'][i0] = {}
+            dat['SOE_ES_init'][i0] = {}
             dat['SOE_ES_max'][i0] = {}
             dat['INC_S'][i0] = {}
             dat['alpha_S_flex'][i0] = {}
@@ -121,6 +123,7 @@ class VppInterface:
                 dat['P_ChES_max'][i0][i1] = es.get('P_ChES_max')
                 dat['P_DchES_max'][i0][i1] = es.get('P_DchES_max')
                 dat['SOE_ES_min'][i0][i1] = es.get('SOE_ES_min')
+                dat['SOE_ES_init'][i0][i1] = es.get('SOE_ES_init')
                 dat['SOE_ES_max'][i0][i1] = es.get('SOE_ES_max')
             for i1, pv in box.pv_resources.getItems():
                 dat['P_PV'][i0][i1] = pv.get('P_PV')
