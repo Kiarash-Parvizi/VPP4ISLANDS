@@ -124,10 +124,10 @@ class ES(Resource):
         # Discharge efficiency of energy storages (%)
         if key == "eta_DchES":
             return self.efficiency_discharge
-        # Minimum state of energy level of energy storages (%)
+        # Minimum state of energy level of energy storages (kW)
         if key == "SOE_ES_min":
             return self.soe_min * self.energy_capacity
-        # Maximum state of energy level of energy storages (%)
+        # Maximum state of energy level of energy storages (kW)
         if key == "SOE_ES_max":
             return self.soe_max * self.energy_capacity
         # Energy capacity of energy storages (kWh)
