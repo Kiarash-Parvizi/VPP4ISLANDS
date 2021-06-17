@@ -10,6 +10,7 @@ class Resource:
     def __init__(self, node_id: int, number: int) -> None:
         self.node_id = node_id
         self.number = number
+        self.sbase = 23e5
 
     def __str__(self) -> str:
         return "node_id: " + str(self.node_id) + ", number: " + str(self.number)

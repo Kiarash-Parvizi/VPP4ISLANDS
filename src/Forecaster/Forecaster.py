@@ -9,6 +9,7 @@ class Forecaster:
 
     def __init__(self, node_id: int = None) -> None:
         self.pf = 0.6197
+        self.sbase = 23e5
         self.node_id = node_id
         self.forecaster_connector = ForecasterAPI(self.node_id)
 
@@ -36,14 +37,17 @@ class Forecaster:
         t = 24
         data = {}
         for i in range(1, t + 1):
-            data[i] = self.forecaster_connector.get_fixed_load(t=i)
+            data[i] = 1000 * \
+                self.forecaster_connector.get_fixed_load(t=i) / self.sbase
         return data
 
     def get_ql(self):
         t = 24
         data = {}
         for i in range(1, t + 1):
-            data[i] = self.forecaster_connector.get_fixed_load(t=i) * self.pf
+            data[i] = 1000 * \
+                self.forecaster_connector.get_fixed_load(
+                    t=i) * self.pf / self.sbase
         return data
 
     def get_da(self):

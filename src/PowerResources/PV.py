@@ -56,7 +56,7 @@ class PV (Resource):
             _data = Forecaster(self.node_id).get_pv()
             for key1, w in _data.items():
                 for key2, item in w.items():
-                    _data[key1][key2] = item * self.p_max
+                    _data[key1][key2] = item * self.p_max / self.sbase
             return _data
         
         raise(KeyError("there is no such key for PV"))
