@@ -14,7 +14,7 @@ class NodeResults:
         self.dir_v_dg_sd = 'output/v_dg_sd.xlsx'
         self.dir_opt_res = 'output/ofv.xlsx'
 
-    def to_excel(self):
+    def to_excel(self, **kwargs):
         sb_box: VppBoxNode = self.node.get_junction(1)
 
         df_buy = pd.DataFrame(sb_box.sp_p_da_buy.values(), index=[0])
@@ -55,9 +55,15 @@ class NodeResults:
         df_v_dg_sd = pd.DataFrame(v_dg_sd_row, columns=v_dg_sd_cols[0], index=indecies)
         df_ofv = pd.DataFrame(self.node.OFV, columns=list(range(1, len(self.node.OFV)+1)), index=[0])
 
-        df_buy.to_excel(self.dir_sp_p_da_buy)
-        df_sell.to_excel(self.dir_sp_p_da_sell)
-        df_u_dg.to_excel(self.dir_u_dg)
-        df_v_dg_su.to_excel(self.dir_v_dg_su)
-        df_v_dg_sd.to_excel(self.dir_v_dg_sd)
-        df_ofv.to_excel(self.dir_opt_res)
+        if kwargs.pop('buy', False):
+            df_buy.to_excel(self.dir_sp_p_da_buy)
+        if kwargs.pop('sell', False):
+            df_sell.to_excel(self.dir_sp_p_da_sell)
+        if kwargs.pop('u_dg', False):
+            df_u_dg.to_excel(self.dir_u_dg)
+        if kwargs.pop('v_dg_su', False):
+            df_v_dg_su.to_excel(self.dir_v_dg_su)
+        if kwargs.pop('v_dg_sd', False):
+            df_v_dg_sd.to_excel(self.dir_v_dg_sd)
+        if kwargs.pop('opt', False):
+            df_ofv.to_excel(self.dir_opt_res)

@@ -21,7 +21,7 @@ if __name__ == '__main__':
         with open(outputFileName, 'w') as fp:
             json.dump(vppNode.to_dict(), fp=fp, indent=4, sort_keys=True)
             node_results = NodeResults(vppNode)
-            node_results.to_excel()
+            node_results.to_excel(buy=True, sell=True)
     else:
         print('ok then')
         # print(data)
