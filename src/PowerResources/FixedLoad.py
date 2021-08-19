@@ -10,6 +10,11 @@ class FixedLoad:
         """
 
     def __init__(self, node_id: int, **kwargs):
+        self.sbase = 23e5
+        self.NT = 24
+        self.NW = 1
+        self.pf = 0.6197
+
         self.node_id = node_id
         # input
         self.p_consumption = kwargs.pop('p_consumption', 0)
@@ -35,9 +40,18 @@ class FixedLoad:
     def get(self, key: str):
         # Active loads
         if key == "P_L":
-            return Forecaster(self.node_id).get_pl()
+            # return Forecaster(self.node_id).get_pl()
+            _data = Forecaster(self.node_id).get_pl()
+            for key1, item in _data.items():
+                _data[key1] = 1000 * item / self.sbase
+            return _data
+            
         # Reactive loads
         if key == "Q_L":
-            return Forecaster(self.node_id).get_ql()
+            # return Forecaster(self.node_id).get_ql()
+            _data = Forecaster(self.node_id).get_ql()
+            for key1, item in _data.items():
+                _data[key1] = 1000 * item * self.pf / self.sbase
+            return _data
 
         raise (KeyError("there is no such key for FixedLoad"))
