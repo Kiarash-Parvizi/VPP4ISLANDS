@@ -138,3 +138,20 @@ def find_node_data(node_id: int, _type: str, data_dict: dict, res_data: list):
         if item['Node_id'] == node_id:
             item['type'] = _type
             res_data.append(item)
+
+def read_nodes_structure():
+    df = pd.read_csv('data/nodes_structure.csv')
+    
+    data = []
+
+    for index, row in df.iterrows():
+        data.append(
+            {
+                'nodes': (int(row['node_a']), int(row['node_b'])),
+                'line': {'r': row['r'], 'x': row['x'], 'i_max': row['i_max'], 'i_max_pu': row['i_max_pu']}
+            }
+        )
+    
+    return {
+        'data': data
+    }
