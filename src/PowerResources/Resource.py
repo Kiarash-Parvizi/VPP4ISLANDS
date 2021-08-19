@@ -11,6 +11,9 @@ class Resource:
         self.node_id = node_id
         self.number = number
         self.sbase = 23e5
+        self.NT = 24
+        self.NW = 1
+        self.pf = 0.6197
 
     def __str__(self) -> str:
         return "node_id: " + str(self.node_id) + ", number: " + str(self.number)
