@@ -37,17 +37,19 @@ class Forecaster:
         t = 24
         data = {}
         for i in range(1, t + 1):
-            data[i] = 1000 * \
-                self.forecaster_connector.get_fixed_load(t=i) / self.sbase
+            # data[i] = 1000 * \
+            #     self.forecaster_connector.get_fixed_load(t=i) / self.sbase
+            data[i] = self.forecaster_connector.get_fixed_load(t=i)
         return data
 
     def get_ql(self):
         t = 24
         data = {}
         for i in range(1, t + 1):
-            data[i] = 1000 * \
-                self.forecaster_connector.get_fixed_load(
-                    t=i) * self.pf / self.sbase
+            # data[i] = 1000 * \
+            #     self.forecaster_connector.get_fixed_load(
+            #         t=i) * self.pf / self.sbase
+            data[i] = self.forecaster_connector.get_fixed_load(t=i)
         return data
 
     def get_da(self):
