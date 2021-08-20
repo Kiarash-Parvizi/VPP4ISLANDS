@@ -30,6 +30,17 @@ class LineProps:
         ###
 
     def get(self, key: str):
+        """helper method for reaching the parameter values based on given key
+
+        Args:
+            key (str)
+
+        Raises:
+            KeyError: raises when the given key is not valid
+
+        Returns:
+            [Any]: parameter value
+        """
         if key == "R":
             return self.r
         if key == "X":
@@ -41,6 +52,14 @@ class LineProps:
         raise KeyError("there is no such key in LineProps")
 
     def set(self, key: str, value, w: int, t: int):
+        """sets the value for the given setpoint
+
+        Args:
+            key (str): key of the setpoint
+            value ([type]): value of the setpoint
+            w (int): w index of the setpoint
+            t (int): t index of the setpoint
+        """
         sp_key = key.split("_")
         key = "_".join(sp_key[2: len(sp_key) - 3])
 
@@ -52,13 +71,39 @@ class LineProps:
             raise KeyError("there is no such key in LineProps")
 
     def to_dict(self):
+        """creates a dictionary based on some of the class attributes for the
+        purpose of database
+
+        Returns:
+            dict: some attributes of the LineProps with its values
+        """
         return self.__dict__
     
     @staticmethod
     def create_from_dict(_dict: dict):
+        """creates a LineProps based on the given dictionary
+
+        Args:
+            _dict (dict): dictionary containing the class attributes and values
+
+        Returns:
+            LineProps: LineProps object based on given _dict 
+        """
         return LineProps(**_dict)
     
     def set_dir_data(self, key: str, value, DEdge: Tuple[int, int], w: int, t: int):
+        """sets values having direction for the given setpoints
+
+        Args:
+            key (str): the given key
+            value ([type]): the given value
+            DEdge (Tuple[int, int]): tuple indicated the direction
+            w (int): w index
+            t (int): time index
+
+        Raises:
+            KeyError: raises when there is no such key in LineProps::dir_data
+        """
         # just for test
         #if not hasattr(self, 'cnt'):
         #    self.cnt = 0

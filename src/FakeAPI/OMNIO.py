@@ -9,6 +9,17 @@ class OMNIOAPI:
         self.node_id = node_id
     
     def get_resources_data(self) -> dict:
+        """returns a dict containing all the resource data of VppBoxNode by
+        its node_id attribute.
+
+        Returns:
+            dict: {
+                resource_name: [],
+                .
+                .
+                .
+            }
+        """
         # res = requests.get(self.endpoint + "/node-resources/" + str(
         #     self.node_id)).json()
         # data = res['data']

@@ -5,6 +5,8 @@ from src.vppNode.VppBoxNode import VppBoxNode
 import pandas as pd
 
 class NodeResults:
+    """a class for creating output files based on final resutls of the optimizer.
+    """
     def __init__(self, node: VppNode) -> None:
         self.node = node
         self.dir_sp_p_da_buy = 'output/buy.xlsx'
@@ -15,6 +17,17 @@ class NodeResults:
         self.dir_opt_res = 'output/ofv.xlsx'
 
     def to_excel(self, **kwargs):
+        """a method to create excel files based on output variables of VppBoxes
+        (setpoints)
+        Args:
+            **kwargs: Arbitrary keyword arguments.
+            buy (bool): True to create output/buy.xlsx
+            sell (bool): True to create output/sell.xlsx
+            u_dg (bool): True to create output/u_dg.xlsx
+            v_dg_su (bool): True to create output/v_dg_su.xlsx
+            v_dg_sd (bool): True to create output/v_dg_sd.xlsx
+            opt (bool): True to create output/ofv.xlsx
+        """
         sb_box: VppBoxNode = self.node.get_junction(1)
 
         df_buy = pd.DataFrame(sb_box.sp_p_da_buy.values(), index=[0])

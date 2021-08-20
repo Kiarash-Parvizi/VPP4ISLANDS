@@ -26,6 +26,15 @@ class UncertaintyParams:
 
     @staticmethod
     def get_instance_by_json(item: dict):
+        """creates UncertaintyParams based on uncertainty_parameters.csv keys 
+        and values.
+
+        Args:
+            item (dict): key, value parameters
+
+        Returns:
+            UncertaintyParams: object of UncertaintyParams
+        """
         wf_pu = item['WF']
         pv_pu = item['PV']
         da_price = item['DA_PRICE']

@@ -96,6 +96,12 @@ class VppNode:
         return e0.junctions
 
     def to_dict(self) -> dict:
+        """creates a dictionary based on some of the class attributes for the
+        purpose of database
+
+        Returns:
+            dict: some attributes of the VppNode with its values
+        """
         obj = {
             'edgeMp': self.edgeMp.to_dict(),
             'junctionMp': self.junctionMp.to_dict()
@@ -104,6 +110,14 @@ class VppNode:
     
     @staticmethod
     def create_from_dict(_dict: dict):
+        """creates a VppNode based on the given dictionary
+
+        Args:
+            _dict (dict): dictionary containing the class attributes and values
+
+        Returns:
+            VppNode: VppNode object based on given _dict 
+        """
         # TODO: complete it
         _dict['edgeMp'] = Mapper[Edge].create_from_dict(_dict['edgeMp', Edge])
         _dict['junctionMp'] = Mapper[Junction].create_from_dict(_dict['junctionMp'], VppBoxNode)

@@ -65,6 +65,14 @@ class DG(Resource):
 
     @staticmethod
     def get_instance_by_json(item: dict):
+        """creates DG based on DG_source.csv keys and values
+
+        Args:
+            item (dict): key, value parameters
+
+        Returns:
+            DG: object of DG
+        """
         # DG No.,Node_id,P_max,P_min,Q_max,Q_min,Rup,Rdn,MUT,MDT,Cost,SUC,SDC
         number = item['DG No.']
         node_id = item['Node_id']
@@ -84,6 +92,11 @@ class DG(Resource):
                   rdn=rdn, mut=mut, mdt=mdt, cost=cost, suc=suc, sdc=sdc)
 
     def update_params_by_json(self, item: dict):
+        """updates this object based on given item dictionary values
+
+        Args:
+            item (dict): key, value structure of the new data
+        """
         self.number = item['DG No.']
         self.node_id = item['Node_id']
         self.p_max = item['P_max']
@@ -99,13 +112,35 @@ class DG(Resource):
         self.sdc = item['SDC']
 
     def to_dict(self) -> dict:
+        """creates a dictionary based on some of the class attributes for the
+        purpose of database
+
+        Returns:
+            dict: some attributes of the DG with its values
+        """
         return self.__dict__
     
     @staticmethod
     def create_from_dict(_dict: dict):
+        """creates a DG based on the given dictionary
+
+        Args:
+            _dict (dict): dictionary containing the class attributes and values
+
+        Returns:
+            DG: DG object based on given _dict 
+        """
         return DG(**_dict)
     
     def set(self, key: str, value, w: int, t: int):
+        """sets the value for the given setpoint
+
+        Args:
+            key (str): key of the setpoint
+            value ([type]): value of the setpoint
+            w (int): w index of the setpoint
+            t (int): t index of the setpoint
+        """
         sp_key = key.split("_")
         key = "_".join(sp_key[2: len(sp_key) - 2])
 
@@ -138,6 +173,17 @@ class DG(Resource):
             raise(KeyError("there is no such key for DG"))
 
     def get(self, key: str):
+        """helper method for reaching the parameter values based on given key
+
+        Args:
+            key (str)
+
+        Raises:
+            KeyError: raises when the given key is not valid
+
+        Returns:
+            [type]: parameter value
+        """
         # start-up costs of conventional DGs ($)
         if key == "SUC_DG":
             return self.suc

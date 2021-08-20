@@ -14,6 +14,14 @@ class LoadColleciton:
         self.sp_q_flex = kwargs.pop('sp_q_flex', {})
 
     def set(self, key: str, value, w: int, t: int):
+        """sets the value for the given setpoint
+
+        Args:
+            key (str): key of the setpoint
+            value ([type]): value of the setpoint
+            w (int): w index of the setpoint
+            t (int): t index of the setpoint
+        """
         sp_key = key.split("_")
         key = "_".join(sp_key[2: len(sp_key) - 1])
 
@@ -31,6 +39,17 @@ class LoadColleciton:
             raise (KeyError("there is no such key for FL"))
     
     def get(self, key: str):
+        """helper method for reaching the parameter values based on given key
+
+        Args:
+            key (str)
+
+        Raises:
+            KeyError: raises when the given key is not valid
+
+        Returns:
+            [type]: parameter value
+        """
         # Incentive payment to flexible loads ($/kWh)
         if key == "INC_S":
             if self.flex_loads.len() is not 0:
@@ -69,6 +88,12 @@ class LoadColleciton:
         raise (KeyError("there is no such key for FL"))
     
     def to_dict(self) -> dict:
+        """creates a dictionary based on some of the class attributes for the
+        purpose of database
+
+        Returns:
+            dict: some attributes of the LoadCollection with its values
+        """
         obj = {}
         obj['sp_p_flex'] = self.sp_p_flex
         obj['sp_q_flex'] = self.sp_q_flex
@@ -78,6 +103,14 @@ class LoadColleciton:
     
     @staticmethod
     def create_from_dict(_dict: dict):
+        """creates a LoadColleciton based on the given dictionary
+
+        Args:
+            _dict (dict): dictionary containing the class attributes and values
+
+        Returns:
+            LoadColleciton: LoadColleciton object based on given _dict 
+        """
         obj = LoadColleciton()
         obj.sp_q_flex = _dict['sp_q_flex']
         obj.sp_p_flex = _dict['sp_p_flex']

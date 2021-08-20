@@ -55,6 +55,14 @@ class ES(Resource):
 
     @staticmethod
     def get_instance_by_json(item: dict):
+        """creates ES based on ES_source.csv keys and values
+
+        Args:
+            item (dict): key, value parameters
+
+        Returns:
+            ES: object of ES
+        """
         number = item['ES No.']
         node_id = item['Node_id']
         p_max_charge = item['P_charge'] 
@@ -70,6 +78,11 @@ class ES(Resource):
                   efficiency_discharge=efficiency, soe_initial=soe_initial)
 
     def update_params_by_json(self, item: dict) -> None:
+        """updates this object based on given item dictionary values
+
+        Args:
+            item (dict): key, value structure of the new data
+        """
         self.number = item['ES No.']
         self.node_id = item['Node_id']
         self.p_max_charge = item['P_charge']
@@ -83,13 +96,35 @@ class ES(Resource):
         self.efficiency_discharge = self.efficiency
 
     def to_dict(self) -> dict:
+        """creates a dictionary based on some of the class attributes for the
+        purpose of database
+
+        Returns:
+            dict: some attributes of the ES with its values
+        """
         return self.__dict__
     
     @staticmethod
     def create_from_dict(_dict: dict):
+        """creates a ES based on the given dictionary
+
+        Args:
+            _dict (dict): dictionary containing the class attributes and values
+
+        Returns:
+            ES: ES object based on given _dict 
+        """
         return ES(**_dict)
     
     def set(self, key: str, value, w: int, t: int):
+        """sets the value for the given setpoint
+
+        Args:
+            key (str): key of the setpoint
+            value ([type]): value of the setpoint
+            w (int): w index of the setpoint
+            t (int): t index of the setpoint
+        """
         sp_key = key.split("_")
         key = "_".join(sp_key[2: len(sp_key) - 2])
 
@@ -112,6 +147,17 @@ class ES(Resource):
             raise(KeyError("there is no such key for ES"))
 
     def get(self, key: str):
+        """helper method for reaching the parameter values based on given key
+
+        Args:
+            key (str)
+
+        Raises:
+            KeyError: raises when the given key is not valid
+
+        Returns:
+            [type]: parameter value
+        """
         # Maximum charge power of energy storages (kW)
         if key == "P_ChES_max":
             return self.p_max_charge

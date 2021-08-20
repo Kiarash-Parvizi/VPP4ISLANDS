@@ -56,6 +56,8 @@ class VppBoxNode(Junction):
         self.sp_v = kwargs.pop('sp_v', {})
 
     def update_data(self) -> None:
+        """it isn't used yet.
+        """
         req = ''
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((self.ip, self.port))
@@ -67,12 +69,26 @@ class VppBoxNode(Junction):
 
     @staticmethod
     def print_resource(resource_map: Mapper) -> None:
+        """static method for printing the data of given resource mapper
+
+        Args:
+            resource_map (Mapper): Mapper of a resource
+        """
         items = resource_map.getItems()
         for item in items:
             print(item[0], " ", type(item[0]), " => ", item[1])
 
     def __update_resource_by_dic(self, resource_name: str, resource_class: Type[Resource], resource_map: Mapper,
                                data_dic: dict):
+        """adds the data_dict to the resource_map with class of 
+        resource_class and the name of resource_name
+
+        Args:
+            resource_name (str): like DG, ES, WF, ...
+            resource_class (Type[Resource]): corresponding classes based on 
+            given resource_name resource_map (Mapper): mapper of that resource
+            data_dic (dict): the data part of corresponding resource
+        """
         data = data_dic
         number = data[resource_name + ' No.']
 
@@ -84,6 +100,17 @@ class VppBoxNode(Junction):
             resource_map.add_by_id(number, resource_class.get_instance_by_json(data))
 
     def get(self, key: str):
+        """helper method for reaching the parameter values based on given key
+
+        Args:
+            key (str)
+
+        Raises:
+            KeyError: raises when the given key is not valid
+
+        Returns:
+            [type]: parameter value
+        """
         if key == "V_min":
             return self.v_min
         if key == "V_max":
@@ -97,6 +124,14 @@ class VppBoxNode(Junction):
             raise KeyError("there is no such key for BoxNode")
 
     def set(self, key: str, value, w: int, t: int):
+        """sets the value for the given setpoint
+
+        Args:
+            key (str): key of the setpoint
+            value ([type]): value of the setpoint
+            w (int): w index of the setpoint
+            t (int): t index of the setpoint
+        """
         sp_key = key.split("_")
         key = "_".join(sp_key[2: len(sp_key) - 1])
 
@@ -126,6 +161,8 @@ class VppBoxNode(Junction):
 
 
     def load_resources_from_api(self) -> None:
+        """loads all the needed resource of the node from the OMNIOAPI
+        """
         omnio = OMNIOAPI(self.node_id)
         data = omnio.get_resources_data()
         for dt in data:
@@ -141,6 +178,12 @@ class VppBoxNode(Junction):
                 self.__update_resource_by_dic("FL", FL, self.load_collection.flex_loads, dt)
 
     def to_dict(self) -> dict:
+        """creates a dictionary based on some of the class attributes for the
+        purpose of database
+
+        Returns:
+            dict: some attributes of the VppBoxNode with its values
+        """
         obj = {}
         obj['_id'] = self.node_id
         obj['node_id'] = self.node_id
@@ -165,6 +208,14 @@ class VppBoxNode(Junction):
     
     @staticmethod
     def create_from_dict(_dict: dict):
+        """creates a VppBoxNode based on the given dictionary
+
+        Args:
+            _dict (dict): dictionary containing the class attributes and values
+
+        Returns:
+            VppBoxNode: VppBoxNode object based on given _dict 
+        """
         _dict['dg_resources'] = Mapper[DG].create_from_dict(_dict['dg_resources'], DG)
         _dict['es_resources'] = Mapper[ES].create_from_dict(_dict['es_resources'], ES)
         _dict['pv_resources'] = Mapper[PV].create_from_dict(_dict['pv_resources'], PV)
